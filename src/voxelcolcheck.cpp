@@ -15,21 +15,23 @@
 
 #include "stdafx.h"
 
-VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv, VoxelGrid<int>& vg_in, Transform Tvg_in): OpenRAVE::CollisionCheckerBase(penv), vg(1.0,1.0,1.0,0.5,Transform(),-10)
+VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv, VoxelGrid<int>& vg_in, Transform Tvg_in): OpenRAVE::CollisionCheckerBase(penv) /*vg_(1.0,1.0,1.0,0.5,Transform(),-10)*/ ,
+    sdf_( 1.0,1.0,1.0, 0.5, Transform(), 1.0 )
 {
     cout << __PRETTY_FUNCTION__ << " : voxel grid" << endl;
 
-    vg = vg_in;
-    Tvg = Tvg_in;
-    bDraw = true;
-    bInitialized = true;
+    // vg = vg_in;
+    Tvg_ = Tvg_in;
+    bDraw_ = true;
+    bInitialized_ = true;
 }
 
-VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv): OpenRAVE::CollisionCheckerBase(penv), vg(1.0,1.0,1.0,0.5,Transform(),-10)
+VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv): OpenRAVE::CollisionCheckerBase(penv), /*vg(1.0,1.0,1.0,0.5,Transform(),-10)*/
+    sdf_( 1.0,1.0,1.0, 0.5, Transform(), 1.0 )
 {
     cout << __PRETTY_FUNCTION__ << endl;
 
-    bDraw = true;
+    bDraw_ = true;
 
     std::vector<RobotBasePtr> robots;
     penv->GetRobots( robots );
@@ -51,10 +53,11 @@ VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv): OpenRAVE:
 
         colbodies.erase( colbodies.begin() + robot_id );
 
-        vg = createVoxelGrid( COMPUTE_NEW_VG, GetEnv(), robots[0], colbodies );
+        VoxelGrid<int> vg = createVoxelGrid( COMPUTE_NEW_VG, GetEnv(), robots[0], colbodies );
+        sdf_ = createPDFfromVoxelGrid( vg, GetEnv(), graphptrs_ );
     }
 
-    bInitialized = false;
+    bInitialized_ = true;
 }
 
 bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, std::vector<std::vector<Vector> >& vvLinkPoints, CollisionReportPtr report)
@@ -69,7 +72,7 @@ bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, std::vector<s
 {
     cout << __PRETTY_FUNCTION__ << endl;
 
-    if(!bInitialized)
+    if(!bInitialized_)
     {
         RAVELOG_INFO("VoxelCollisionChecker ERROR: VoxelCollisionChecker is not initialized!\n");
         return false;
@@ -84,10 +87,10 @@ bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, std::vector<s
     if( !report )
         report.reset(new CollisionReport());
     
-    if(bDraw)
+    if(bDraw_)
     {
-        vplotpoints.resize(0);
-        vplotcolors.resize(0);
+        vplotpoints_.resize(0);
+        vplotcolors_.resize(0);
     }
 
     vvPointsColliding.resize(pbody1->GetLinks().size());
@@ -104,43 +107,42 @@ bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, std::vector<s
         {
             //RAVELOG_INFO("linktrans: %f %f %f\n",temptm.trans.x,temptm.trans.y,temptm.trans.z);
             Vector sample = temptm*vvLinkPoints[i][j];
-            float val = vg(sample.x,sample.y,sample.z);
+            float val = sdf_(sample.x,sample.y,sample.z).distance_square_;
             //RAVELOG_INFO("val: %f\n",val);
-            if(val > 0)
+            if(val == 0)
             {
                 report->numWithinTol++;
                 vvPointsColliding[i][j] = true;
-                if(bDraw)
+                if(bDraw_)
                 {
-                    vplotpoints.push_back(sample);
-                    vplotcolors.push_back(1);
-                    vplotcolors.push_back(0);
-                    vplotcolors.push_back(0);
+                    vplotpoints_.push_back(sample);
+                    vplotcolors_.push_back(1);
+                    vplotcolors_.push_back(0);
+                    vplotcolors_.push_back(0);
                 }
             }
             else
             {
                 vvPointsColliding[i][j] = false;
-                if(bDraw)
+                if(bDraw_)
                 {
-                    vplotpoints.push_back(sample);
-                    vplotcolors.push_back(0);
-                    vplotcolors.push_back(0);
-                    vplotcolors.push_back(1);
+                    vplotpoints_.push_back(sample);
+                    vplotcolors_.push_back(0);
+                    vplotcolors_.push_back(0);
+                    vplotcolors_.push_back(1);
                 }
             }
         }
     }
     
-    if(bDraw)
+    if(bDraw_)
     {
-        GraphHandlePtr figure = GetEnv()->plot3(&vplotpoints[0].x,vplotpoints.size(),sizeof(vplotpoints[0]),20.0,&vplotcolors[0],0);
-        graphptrs.push_back(figure);
+        GraphHandlePtr figure = GetEnv()->plot3(&vplotpoints_[0].x,vplotpoints_.size(),sizeof(vplotpoints_[0]),20.0,&vplotcolors_[0],0);
+        graphptrs_.push_back(figure);
     }
     
     if(report->numWithinTol)
         return true;
     else
         return false;
-    
 }

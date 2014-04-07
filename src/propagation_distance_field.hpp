@@ -76,7 +76,6 @@ struct PropDistanceFieldVoxel
 class PropagationDistanceField: public DistanceField<PropDistanceFieldVoxel>
 {
 public:
-
     /**
    * \brief Constructor for the DistanceField.
    */

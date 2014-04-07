@@ -30,11 +30,10 @@ double obstacleCost( double distance);
 
 VoxelGrid<int> createVoxelGrid(int compute_new_vg, EnvironmentBasePtr penv, RobotBasePtr robot, std::vector<KinBodyPtr>& colbodies );
 
-VoxelGrid<int> createEmptyVoxelGrid(RobotBasePtr robot);
+VoxelGrid<int> createEmptyVoxelGrid( RobotBasePtr robot );
 
+PropagationDistanceField createPDFfromVoxelGrid( const VoxelGrid<int>& vg, EnvironmentBasePtr penv, std::vector< boost::shared_ptr<void> >& graphptr );
 
-PropagationDistanceField createPDFfromVoxelGrid( VoxelGrid<int>* vg );
-
-CostField  createCostFieldfromVoxelGrid( VoxelGrid<int>* vg );
+CostField  createCostFieldfromVoxelGrid( const VoxelGrid<int>& vg );
 
 #endif /* INIT_OBS_FIELD_H */

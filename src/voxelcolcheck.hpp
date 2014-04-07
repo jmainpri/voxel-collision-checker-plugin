@@ -74,15 +74,18 @@ public:
     bool CheckCollision(KinBodyConstPtr pbody1, std::vector<std::vector<Vector> >& vvLinkPoints, CollisionReportPtr report = CollisionReportPtr());
     bool CheckCollision(KinBodyConstPtr pbody1, std::vector<std::vector<Vector> >& vvLinkPoints, std::vector<std::vector<bool> >& vvPointsColliding, CollisionReportPtr report = CollisionReportPtr());
 
-    bool bInitialized;
+    bool bInitialized_;
+
 protected:
-    VoxelGrid<int> vg; //stores the voxel grid
-    Transform Tvg; //transform of the voxel grid center
+
+    PropagationDistanceField sdf_;
+
+    Transform Tvg_; //transform of the voxel grid center
     
-    bool bDraw;
-    std::vector<  boost::shared_ptr<void>  > graphptrs;
-    std::vector<RaveVector<float> > vplotpoints;
-    std::vector<float> vplotcolors;
+    bool bDraw_;
+    std::vector<  boost::shared_ptr<void>  > graphptrs_;
+    std::vector<RaveVector<float> > vplotpoints_;
+    std::vector<float> vplotcolors_;
 };
 
 #endif

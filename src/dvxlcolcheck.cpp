@@ -23,7 +23,6 @@ bool DVXLCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, std::vector<st
 {
     std::vector<std::vector<bool> > vvPointsColliding;
     return CheckCollision(pbody1, vvLinkPoints, vvPointsColliding, report);
-
 }
 
 bool DVXLCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, std::vector<std::vector<Vector> >& vvLinkPoints, std::vector<std::vector<bool> >& vvPointsColliding, CollisionReportPtr report)

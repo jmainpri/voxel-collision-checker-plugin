@@ -61,7 +61,7 @@ if __name__ == "__main__":
             shelf = b
 
     # Get body
-    shelf.SetTransform( array( MakeTransform( rodrigues([-pi/2,0,0]), matrix([0,0,0]) ) ) )
+    shelf.SetTransform( array( MakeTransform( rodrigues([-pi/2,0,0]), matrix([0,-0.5,0]) ) ) )
 
     # Get robot
     robot = orEnv.GetRobots()[0]
