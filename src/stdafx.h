@@ -245,6 +245,6 @@ extern std::vector<std::vector<Vector> > global_vvLinkSamples;
 // extern std::vector<boost::shared_ptr<VoxelCollisionChecker> > global_vvoxelcollider;
 // extern std::vector<CostField> global_vcostgrid;
            
-//stuff for plotting
-extern std::vector<GraphHandlePtr> graphptrs;
+// stuff for plotting
+// extern std::vector<GraphHandlePtr> graphptrs;
 #endif

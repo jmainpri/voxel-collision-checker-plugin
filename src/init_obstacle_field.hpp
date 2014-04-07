@@ -37,7 +37,4 @@ PropagationDistanceField createPDFfromVoxelGrid( VoxelGrid<int>* vg );
 
 CostField  createCostFieldfromVoxelGrid( VoxelGrid<int>* vg );
 
-
-
 #endif /* INIT_OBS_FIELD_H */
-

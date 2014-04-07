@@ -116,13 +116,12 @@ public:
    */
     double getOrigin(Dimension dim) const;
 
-    /**
+  /**
    * \brief Gets the origin of the given dimension.
    */
     Transform getOriginTransform() const;
 
-
-    /**
+  /**
    * \brief Gets the number of cells of the given dimension.
    */
     int getNumCells(Dimension dim) const;

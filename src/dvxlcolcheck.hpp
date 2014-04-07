@@ -85,6 +85,7 @@ protected:
     bool bDraw_;
     std::vector<RaveVector<float> > vplotpoints_;
     std::vector<float> vplotcolors_;
+    std::vector<  boost::shared_ptr<void> > graphptrs;
 };
 
 #endif // DVXLCOLCHECK_H

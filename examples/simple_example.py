@@ -31,23 +31,49 @@
 
 from openravepy import *
 from numpy import *
+from misc_transform import *
 
 import time
 import sys
 
-
 if __name__ == "__main__":
       
-    #load the environment if it is not already loaded
+    # load the environment if it is not already loaded
     try:
         orEnv
     except NameError:
         orEnv = Environment()
         orEnv.SetViewer('qtcoin')
     
-    #load the robot into the environment
+    # load the robot into the environment
     orEnv.Reset()
-    orEnv.Load('/usr/share/openrave-0.8/data/shelf.kinbody.xml')
+    orEnv.Load('data/shelf.kinbody.xml')
+    orEnv.Load('robots/pr2-beta-static.zae')
+
+    T = eye(4)
+    T[0,3] = 0.0
+    T[1,3] = 0.0
+    T[2,3] = 0.0
+
+    for b in orEnv.GetBodies() :
+        print "name : ", b.GetName()
+        if  b.GetName() == "Shelf":
+            shelf = b
+
+    # Get body
+    shelf.SetTransform( array( MakeTransform( rodrigues([-pi/2,0,0]), matrix([0,0,0]) ) ) )
+
+    # Get robot
+    robot = orEnv.GetRobots()[0]
+    robot.SetTransform( T )
+
+    # Init collision checker
+    collisionChecker = RaveCreateCollisionChecker( orEnv,'VoxelColChecker')
+    orEnv.SetCollisionChecker( collisionChecker )
+
+ 
+    print "checking collision for robot : " + robot.GetName()
+    #orEnv.CheckCollision( robot )
     
     print "Press return to exit."
     sys.stdin.readline()

@@ -115,7 +115,6 @@ inline CostField::CostField(double size_x, double size_y, double size_z, double 
     grid.oz = origin_.trans[DIM_Z];
 }
 
-
 inline double CostField::getCost(double x, double y, double z) const
 {
     int gx, gy, gz;

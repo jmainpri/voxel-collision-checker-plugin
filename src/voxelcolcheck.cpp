@@ -17,33 +17,63 @@
 
 VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv, VoxelGrid<int>& vg_in, Transform Tvg_in): OpenRAVE::CollisionCheckerBase(penv), vg(1.0,1.0,1.0,0.5,Transform(),-10)
 {
+    cout << __PRETTY_FUNCTION__ << " : voxel grid" << endl;
+
     vg = vg_in;
     Tvg = Tvg_in;
-    bDraw = false;
+    bDraw = true;
     bInitialized = true;
 }
 
 VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv): OpenRAVE::CollisionCheckerBase(penv), vg(1.0,1.0,1.0,0.5,Transform(),-10)
 {
-    bDraw = false;
+    cout << __PRETTY_FUNCTION__ << endl;
+
+    bDraw = true;
+
+    std::vector<RobotBasePtr> robots;
+    penv->GetRobots( robots );
+
+    if( !robots.empty() ) {
+
+        std::vector<KinBodyPtr> colbodies;
+        penv->GetBodies( colbodies );
+
+        int robot_id = 0;
+
+        for( size_t i = 0; i < colbodies.size(); i++ )
+        {
+            if( colbodies[i]->GetName() == robots[0]->GetName() )
+            {
+                robot_id = i;
+            }
+        }
+
+        colbodies.erase( colbodies.begin() + robot_id );
+
+        vg = createVoxelGrid( COMPUTE_NEW_VG, GetEnv(), robots[0], colbodies );
+    }
+
     bInitialized = false;
 }
 
 bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, std::vector<std::vector<Vector> >& vvLinkPoints, CollisionReportPtr report)
 {
+    cout << __PRETTY_FUNCTION__ << endl;
+
     std::vector<std::vector<bool> > vvPointsColliding;
-    return CheckCollision(pbody1, vvLinkPoints, vvPointsColliding, report);
-    
+    return CheckCollision( pbody1, vvLinkPoints, vvPointsColliding, report );
 }
 
 bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, std::vector<std::vector<Vector> >& vvLinkPoints, std::vector<std::vector<bool> >& vvPointsColliding, CollisionReportPtr report)
 {
+    cout << __PRETTY_FUNCTION__ << endl;
+
     if(!bInitialized)
     {
         RAVELOG_INFO("VoxelCollisionChecker ERROR: VoxelCollisionChecker is not initialized!\n");
         return false;
     }
-    
     
     if(pbody1->GetLinks().size() != vvLinkPoints.size())
     {
@@ -65,12 +95,12 @@ bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, std::vector<s
     report->numWithinTol = 0;
     
 
-    for(int i = 0; i <  pbody1->GetLinks().size(); i++)
+    for( size_t i = 0; i < pbody1->GetLinks().size(); i++)
     {
         Transform temptm = pbody1->GetLinks()[i]->GetTransform();
         vvPointsColliding[i].resize(vvLinkPoints[i].size());
 
-        for(int j = 0; j < vvLinkPoints[i].size(); j++)
+        for( size_t j = 0; j < vvLinkPoints[i].size(); j++)
         {
             //RAVELOG_INFO("linktrans: %f %f %f\n",temptm.trans.x,temptm.trans.y,temptm.trans.z);
             Vector sample = temptm*vvLinkPoints[i][j];

@@ -4,6 +4,12 @@ using namespace std;
 using namespace OpenRAVE;
 using namespace distance_field;
 
+string convertInt(int number)
+{
+   stringstream ss;//create a stringstream
+   ss << number;//add number to the stream
+   return ss.str();//return a string with the contents of the stream
+}
 
 VoxelGrid<int> createEmptyVoxelGrid(RobotBasePtr robot)
 {
@@ -35,19 +41,18 @@ VoxelGrid<int> createEmptyVoxelGrid(RobotBasePtr robot)
 
 VoxelGrid<int> createVoxelGrid(int compute_new_vg, EnvironmentBasePtr penv, RobotBasePtr robot, std::vector<KinBodyPtr>& colbodies)
 {
-    
     std::vector<KinBodyPtr> allbodies;
     penv->GetBodies(allbodies);
     std::vector<KinBodyConstPtr> vbodyexcluded;
     std::vector<KinBody::LinkConstPtr> vlinkexcluded;
     
-    for(int i = 0; i < allbodies.size(); i++)
+    for(size_t i = 0; i < allbodies.size(); i++)
     {
         bool bExclude = true;
-        for(int j = 0; j < colbodies.size();j++)
+        for(size_t j = 0; j < colbodies.size();j++)
         {
             
-            if(stricmp(allbodies[i]->GetName().c_str(), colbodies[j]->GetName().c_str()) == 0 )
+            if( allbodies[i]->GetName() == colbodies[j]->GetName() )
             {
                 bExclude = false;
                 break;
@@ -85,7 +90,7 @@ VoxelGrid<int> createVoxelGrid(int compute_new_vg, EnvironmentBasePtr penv, Robo
         unitCollision->SetName("v");
         unitCollision->InitFromBoxes(vaabbs, 1);
         //penv->LockPhysics(true);
-        penv->AddKinBody(unitCollision);
+        penv->Add( unitCollision ); // old add kin body
         //penv->LockPhysics(false);
         OpenRAVE::Transform voxelT; // transform for unit collision, robot
         voxelT.identity();
@@ -104,19 +109,19 @@ VoxelGrid<int> createVoxelGrid(int compute_new_vg, EnvironmentBasePtr penv, Robo
         robotT.trans.z -= LARGE_DISTANCE;
         robot->SetTransform(robotT);
         int inCollision, numCollisions=0;
-        double posn[3];
+        // double posn[3];
         for (int x=0; x<numX; x++)
             for (int y=0; y<numY; y++)
                 for (int z=0; z<numZ; z++)
                 {
                     //vg.gridToWorld(x,y,z, posn[0], posn[1],posn[2]);
                     //voxelT.trans = posn; // set collision sphere to voxel position
-                    vg.gridToWorldTransform(x,y,z, voxelT);
+                    vg.gridToWorldTransform( x, y ,z, voxelT );
                     unitCollision->SetTransform(voxelT);
                     if(colbodies.size() == 0)
-                        inCollision = penv->CheckCollision(unitCollision);
+                        inCollision = penv->CheckCollision( unitCollision );
                     else
-                        inCollision = penv->CheckCollision(unitCollision, vbodyexcluded, vlinkexcluded);
+                        inCollision = penv->CheckCollision( unitCollision, vbodyexcluded, vlinkexcluded);
 
                     if (inCollision) { // fill the voxel if there is a collision
                         vg.getCell(x,y,z) = 1;
@@ -168,36 +173,66 @@ VoxelGrid<int> createVoxelGrid(int compute_new_vg, EnvironmentBasePtr penv, Robo
     }
 
     // Visualize voxel grid and bounds
-#if 0
+//#if 0
 
-    std::vector<OpenRAVE::KinBody *> visArray;
+    std::vector<AABB> vaabbs;
+    AABB box;
+    Vector unitExtents;
+    unitExtents.x = VOXEL_RES/2.;
+    unitExtents.y = VOXEL_RES/2.;
+    unitExtents.z = VOXEL_RES/2.;
+    box.extents = unitExtents;
+    vaabbs.push_back(box);
+
     OpenRAVE::Transform voxelT; // transform for unit collision, robot
     double posn[3];
-    for (int x=0; x<numX; x++)
+
+    cout << "numX : " << numX << endl;
+    cout << "numY : " << numY << endl;
+    cout << "numZ : " << numZ << endl;
+
+    std::vector<OpenRAVE::KinBodyPtr> voxels;
+
+    for (int x=0; x<numX; x++){
         for (int y=0; y<numY; y++)
             for (int z=0; z<numZ; z++)
             {
                 // #if 1 // show all voxels
                 int isBound = 0;
+
                 if (x==0 || x==numX-1) isBound++;
                 if (y==0 || y==numY-1) isBound++;
                 if (z==0 || z==numZ-1) isBound++;
-                if(vg.getCell(x,y,z) || isBound > 2 ) {   // voxel if collision or an edge of grid
-                    vg.gridToWorld(x,y,z, posn[0], posn[1],posn[2]);
-                    voxelT.trans = posn; // set collision sphere to voxel position
-                    penv->LockPhysics(true);
-                    visArray.push_back(penv->CreateKinBody());
-                    visArray[visArray.size()-1]->Init("/home/anca/CHOMP/chomp_grid_unit.kinbody.xml", NULL);
 
-                    penv->AddKinBody(visArray[visArray.size()-1]);
-                    penv->LockPhysics(false);
-                    visArray[visArray.size()-1]->SetTransform(voxelT);
+                if( vg.getCell(x,y,z) || isBound > 2 ) // voxel if collision or an edge of grid
+                {
+                    vg.gridToWorld( x, y, z, posn[0], posn[1], posn[2] );
+                    voxelT.trans = posn; // set collision sphere to voxel position
+                    // penv->LockPhysics(true);
+                    OpenRAVE::KinBodyPtr viz_body = RaveCreateKinBody(penv);
+                    viz_body->SetName( string("v") + convertInt(x) + "_" + convertInt(y) + "_" + convertInt(z) );
+                    viz_body->InitFromBoxes( vaabbs, 1 );
+                    viz_body->Enable( false );
+
+                    // penv->Add( viz_body );
+                    // penv->LockPhysics(false);
+                    viz_body->SetTransform( voxelT );
+
+                    voxels.push_back( viz_body );
                 }
                 //#endif
+                // cout << "cell : " << x << " " << y << " " << z << endl;
             }
-#endif
+        cout << "cell : " << x << endl;
+    }
+//#endif
+
+    for (size_t i=0; i<voxels.size(); i++)
+    {
+        penv->Add( voxels[i] );
+    }
     
-    RAVELOG_INFO("finished initializing voxel grid\n");
+    RAVELOG_INFOA("finished initializing voxel grid\n");
 
     return(vg);
 }
@@ -209,9 +244,9 @@ PropagationDistanceField createPDFfromVoxelGrid( VoxelGrid<int>* vg )
     double sizeX = vg->getSize(VoxelGrid<int>::DIM_X);
     double sizeY = vg->getSize(VoxelGrid<int>::DIM_Y);
     double sizeZ = vg->getSize(VoxelGrid<int>::DIM_Z);
-    double oX = vg->getOrigin(VoxelGrid<int>::DIM_X);
-    double oY = vg->getOrigin(VoxelGrid<int>::DIM_Y);
-    double oZ = vg->getOrigin(VoxelGrid<int>::DIM_Z);
+    // double oX = vg->getOrigin(VoxelGrid<int>::DIM_X);
+    // double oY = vg->getOrigin(VoxelGrid<int>::DIM_Y);
+    // double oZ = vg->getOrigin(VoxelGrid<int>::DIM_Z);
     double res = vg->getResolution(VoxelGrid<int>::DIM_X); // uniform resolution for X,Y,Z
     double maxD = (sizeX + sizeY + sizeZ); // max distance is the diagonal of the grid; consersative bound
 
@@ -279,9 +314,9 @@ CostField  createCostFieldfromVoxelGrid( VoxelGrid<int>* vg )
     double sizeX = vg->getSize(VoxelGrid<int>::DIM_X);
     double sizeY = vg->getSize(VoxelGrid<int>::DIM_Y);
     double sizeZ = vg->getSize(VoxelGrid<int>::DIM_Z);
-    double oX = vg->getOrigin(VoxelGrid<int>::DIM_X);
-    double oY = vg->getOrigin(VoxelGrid<int>::DIM_Y);
-    double oZ = vg->getOrigin(VoxelGrid<int>::DIM_Z);
+    // double oX = vg->getOrigin(VoxelGrid<int>::DIM_X);
+    // double oY = vg->getOrigin(VoxelGrid<int>::DIM_Y);
+    // double oZ = vg->getOrigin(VoxelGrid<int>::DIM_Z);
     double res = vg->getResolution(VoxelGrid<int>::DIM_X); // uniform resolution for X,Y,Z
     double maxD = (sizeX + sizeY + sizeZ); // max distance is the diagonal of the grid; conservative bound
     

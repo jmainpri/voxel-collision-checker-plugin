@@ -55,12 +55,12 @@ bool DVXLCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, std::vector<st
     report->numWithinTol = 0;
 
 
-    for(int i = 0; i <  pbody1->GetLinks().size(); i++)
+    for( size_t i = 0; i <  pbody1->GetLinks().size(); i++)
     {
         Transform temptm = pbody1->GetLinks()[i]->GetTransform();
         vvPointsColliding[i].resize(vvLinkPoints[i].size());
 
-        for(int j = 0; j < vvLinkPoints[i].size(); j++)
+        for( size_t j = 0; j < vvLinkPoints[i].size(); j++)
         {
             //RAVELOG_INFO("linktrans: %f %f %f\n",temptm.trans.x,temptm.trans.y,temptm.trans.z);
             Vector sample = temptm*vvLinkPoints[i][j];
@@ -130,14 +130,14 @@ bool DVXLCollisionChecker::CheckCostFnCollision(KinBodyConstPtr pbody1, std::vec
     float sum_cost = 0.0;
     //Do the actual work
     //Iterate through the links of the robot
-    for(int i = 0; i < pbody1->GetLinks().size(); i++)
+    for( size_t i = 0; i < pbody1->GetLinks().size(); i++)
     {
         //Get the transform of the current link
         Transform temptm = pbody1->GetLinks()[i]->GetTransform();
         //Resize as necessary
         vvPointsColliding[i].resize(vvLinkPoints[i].size());
 
-        for(int j = 0; j < vvLinkPoints[i].size(); j++)
+        for( size_t j = 0; j < vvLinkPoints[i].size(); j++)
         {
             //RAVELOG_INFO("linktrans: %f %f %f\n",temptm.trans.x,temptm.trans.y,temptm.trans.z);
             Vector sample = temptm*vvLinkPoints[i][j];

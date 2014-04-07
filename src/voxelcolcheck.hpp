@@ -32,6 +32,8 @@ public:
     virtual bool SetCollisionOptions(std::ostream& sout, std::istream& sinput) {return true;}
     virtual void SetTolerance(dReal tolerance) {}
 
+    //! test init function
+    void init();
 
     /// called when environment sets this collision checker, checker assumes responsibility for KinBody::_pCollisionData
     /// checker should also gather all current bodies in the environment and put them in its collision space
@@ -78,12 +80,9 @@ protected:
     Transform Tvg; //transform of the voxel grid center
     
     bool bDraw;
-    //std::vector<EnvironmentBase::GraphHandlePtr> graphptrs;
+    std::vector<  boost::shared_ptr<void>  > graphptrs;
     std::vector<RaveVector<float> > vplotpoints;
     std::vector<float> vplotcolors;
-    
-    
 };
 
 #endif
-
