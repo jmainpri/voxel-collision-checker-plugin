@@ -114,7 +114,26 @@ bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, CollisionRepo
 {
     cout << __PRETTY_FUNCTION__ << std::endl;
     cout << " -- main collision detection function" << endl;
-    return false;
+
+    OpenRAVE::Vector p;
+    double distance_obst;
+
+    bool in_collision = false;
+
+    for( size_t i =0; i<collision_points_.size() ; i ++ )
+    {
+        collision_points_[i].m_is_colliding = false;
+        collision_points_[i].getTransformMatrixedPosition( p );
+
+        distance_obst = sdf_.getDistance( sdf_( p.x, p.y, p.z) );
+
+        if( distance_obst < collision_points_[i].getRadius() )
+        {
+            collision_points_[i].m_is_colliding = true;
+            in_collision = true;
+        }
+    }
+    return in_collision;
 }
 
 bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, std::vector<std::vector<Vector> >& vvLinkPoints, CollisionReportPtr report)

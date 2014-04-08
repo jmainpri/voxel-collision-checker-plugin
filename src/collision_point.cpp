@@ -67,8 +67,7 @@ void CollisionPoint::draw( std::vector< boost::shared_ptr<void> >& graphptr, Ope
     const OpenRAVE::TransformMatrix& T = m_joint->GetHierarchyParentLink()->GetTransform();
     OpenRAVE::Vector point = T*m_position;
 
-    // yellow
-    OpenRAVE::RaveVector<float> vcolors(1.0,1.0,0.0,0.1);
+    OpenRAVE::RaveVector<float> vcolors(1.0, m_is_colliding ? 0.0 : 1.0 ,0.0,0.1);
 
     std::vector<OpenRAVE::RaveVector<float> > vpoints;
     OpenRAVE::RaveVector<float> pnt( point[0], point[1], point[2] );

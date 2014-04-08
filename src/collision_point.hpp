@@ -60,6 +60,7 @@ public:
         return m_parent_joints;
     }
 
+    void getTransformMatrixedPosition( OpenRAVE::Vector& position ) const;
     void getTransformMatrixedPosition(std::vector<OpenRAVE::TransformMatrix>& segment_frames, OpenRAVE::Vector& position) const;
     void getTransformMatrixedPosition(std::vector<std::vector<double> >& segment_frames, OpenRAVE::Vector& position) const;
 
@@ -76,6 +77,7 @@ public:
     bool m_is_colliding;                  /**< Collision point in collision */
 
 private:
+
     OpenRAVE::KinBody::JointPtr m_joint; // Joint to draw the collision point
 
     std::vector<int> m_parent_joints;      /**< Which joints can influence the motion of this point */
@@ -141,17 +143,21 @@ inline const OpenRAVE::Vector& CollisionPoint::getPosition() const
     return m_position;
 }
 
-inline void CollisionPoint::getTransformMatrixedPosition(std::vector<OpenRAVE::TransformMatrix>& segment_frames,
-                                                   OpenRAVE::Vector& position) const
+inline void CollisionPoint::getTransformMatrixedPosition(std::vector<OpenRAVE::TransformMatrix>& segment_frames, OpenRAVE::Vector& position) const
 {
     position = segment_frames[m_segment_number] * m_position;
 }
 
-inline void CollisionPoint::getTransformMatrixedPosition(std::vector<std::vector<double> >& segment_frames,
-                                                   OpenRAVE::Vector& position) const
+inline void CollisionPoint::getTransformMatrixedPosition(std::vector<std::vector<double> >& segment_frames, OpenRAVE::Vector& position) const
 {
     OpenRAVE::TransformMatrix T;
     stdVectorToEigenTransformMatrix( segment_frames[m_segment_number], T );
+    position = T*m_position;
+}
+
+inline void CollisionPoint::getTransformMatrixedPosition( OpenRAVE::Vector& position ) const
+{
+    const OpenRAVE::Transform& T = m_joint->GetHierarchyParentLink()->GetTransform();
     position = T*m_position;
 }
 
