@@ -90,15 +90,22 @@ bool VoxelCollisionChecker::InitKinBody(KinBodyPtr pbody)
     return true;
 }
 
-void VoxelCollisionChecker::CreateCollisionPoints( KinBodyPtr pbody )
+void VoxelCollisionChecker::CreateCollisionPoints( RobotBasePtr robot )
 {
-    if( pbody->GetName() == "pr2" )
+    collision_points_.clear();
+
+    if( robot->GetName() == "pr2" )
     {
             cout << "Compute collision points for PR2" << endl;
-
+            collision_points_ = createCollionPointsForPr2( robot );
     }
     else {
-        RAVELOG_INFO("Does not know how to compute collision points for kinbody : %s\n" , pbody->GetName().c_str() );
+        RAVELOG_INFO("Does not know how to compute collision points for kinbody : %s\n" , robot->GetName().c_str() );
+    }
+
+    for( size_t i =0; i < collision_points_.size() ; i ++ )
+    {
+        collision_points_[i].draw( graphptrs_, GetEnv() );
     }
 }
 

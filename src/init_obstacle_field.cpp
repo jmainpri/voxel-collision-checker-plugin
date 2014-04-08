@@ -386,7 +386,7 @@ PropagationDistanceField createPDFfromVoxelGrid( const VoxelGrid<int>& vg, Envir
 //        cout << "\n";
 //    }
 
-//#if 0
+#if 0
     cout << "resolution : " << res << endl;
 
     double posn[3];
@@ -434,7 +434,7 @@ PropagationDistanceField createPDFfromVoxelGrid( const VoxelGrid<int>& vg, Envir
             }
         // cout << "cell : " << x << endl;
     }
-//#endif
+#endif
 
     return(PDF);
 }
@@ -584,10 +584,69 @@ double obstacleCost( double distance) // smooth obstacle cost -- 0 for positive 
     }
 }
 
-std::vector<CollisionPoint> createCollionPointsForPr2( OpenRAVE::KinBodyPtr body )
+//! Generates the collision point for a given link
+//! Stores the segment number (the id of the joint for planning)
+//! Also store the parent joints of the link
+std::vector<CollisionPoint> getLinksCollisionPoints( OpenRAVE::KinBody::JointPtr j, Vector p1, Vector p2, int segment_number, const std::vector<int>& parent_joints )
 {
     std::vector<CollisionPoint> collision_points;
-    return collision_points;
 
+    double collision_clearance_default(0.10);
+
+    double radius = 0.20; // bc->getRadius();
+
+    double length = std::sqrt( (p1-p2).lengthsqr2() ); // bc->getLength();
+
+    double spacing = radius / 2.0;
+    int num_points = ceil( length / spacing ) + 1;
+    spacing = length / ( num_points - 1.0 );
+
+    cout << "segment number : " << segment_number << endl;
+
+    for (int i=0; i<num_points; ++i)
+    {
+        Vector p = p1 + ((double)i/(double)num_points)*( p2 - p1 );
+        collision_points.push_back( CollisionPoint( j, parent_joints, radius, collision_clearance_default, segment_number, p) );
+    }
+
+    return collision_points;
+}
+
+std::vector<CollisionPoint> createCollionPointsForPr2( OpenRAVE::RobotBasePtr robot )
+{
+    std::vector<CollisionPoint> collision_points;
+
+    const std::vector< int >& active_dofs = robot->GetActiveDOFIndices();
+    std::vector< OpenRAVE::KinBody::JointPtr > joints;
+
+    for( size_t i=0; i<active_dofs.size(); i++ )
+    {
+        OpenRAVE::KinBody::JointPtr j = robot->GetJointFromDOFIndex( active_dofs[i] );
+
+        if( find( joints.begin(), joints.end(), j ) == joints.end() )
+        {
+            joints.push_back( j );
+        }
+    }
+
+    for( size_t i=0; i<joints.size()-1; i++ )
+    {
+        OpenRAVE::KinBody::JointPtr j1 = joints[i];
+        OpenRAVE::KinBody::JointPtr j2 = joints[i+1];
+
+        cout << "j1.GetName() : " << j1->GetName() << endl;
+        cout << "j2.GetName() : " << j2->GetName() << endl;
+
+        Vector p1 = j1->GetHierarchyParentLink()->GetTransform().inverse() * j1->GetAnchor();
+        Vector p2 = j2->GetHierarchyParentLink()->GetTransform().inverse() * j2->GetAnchor();
+
+        std::vector<int> parent_joints;
+
+        std::vector<CollisionPoint> new_points = getLinksCollisionPoints( j1, p1, p2, i, parent_joints );
+
+        collision_points.insert( collision_points.end(), new_points.begin(), new_points.end() );
+    }
+
+    return collision_points;
 }
 

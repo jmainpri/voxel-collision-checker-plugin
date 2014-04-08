@@ -47,8 +47,8 @@ if __name__ == "__main__":
     
     # load the robot into the environment
     orEnv.Reset()
-    orEnv.Load('data/shelf.kinbody.xml')
     orEnv.Load('robots/pr2-beta-static.zae')
+    orEnv.Load('data/shelf.kinbody.xml')
 
     T = eye(4)
     T[0,3] = 0.0
@@ -61,11 +61,25 @@ if __name__ == "__main__":
             shelf = b
 
     # Get body
-    shelf.SetTransform( array( MakeTransform( rodrigues([-pi/2,0,0]), matrix([0,-0.5,0]) ) ) )
+    shelf.SetTransform( array( MakeTransform( rodrigues([-pi/2,0,0]), matrix([0.7,-0.5,0]) ) ) )
 
     # Get robot
     robot = orEnv.GetRobots()[0]
     robot.SetTransform( T )
+
+    # Set active manipulator
+    robot.SetActiveManipulator(1)
+    # indices = robot.GetActiveManipulator().GetArmIndices()
+    indices = [27, 28, 29, 30, 31, 32, 33]
+
+    # Print the limits
+    for jIdx, j in enumerate(robot.GetJoints()):
+        if jIdx not in indices :
+            continue
+        print "%s, \t%.3f, \t%.3f" % ( j.GetName() , j.GetLimits()[0] , j.GetLimits()[1] )
+
+    robot.SetActiveDOFs( indices )
+    robot.SetDOFValues( [-1,0.5,0.5,-0.6,-1.5,-1,0], indices )
 
     # Init collision checker
     collisionChecker = RaveCreateCollisionChecker( orEnv,'VoxelColChecker')

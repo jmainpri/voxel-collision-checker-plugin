@@ -31,6 +31,6 @@ PropagationDistanceField createPDFfromVoxelGrid( const distance_field::VoxelGrid
 
 CostField createCostFieldfromVoxelGrid( const distance_field::VoxelGrid<int>& vg );
 
-std::vector<CollisionPoint> createCollionPointsForPr2( OpenRAVE::KinBodyPtr body );
+std::vector<CollisionPoint> createCollionPointsForPr2( OpenRAVE::RobotBasePtr body );
 
 #endif /* INIT_OBS_FIELD_H */

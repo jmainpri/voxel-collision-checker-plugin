@@ -79,7 +79,7 @@ public:
 
 protected:
 
-    void CreateCollisionPoints( KinBodyPtr pbody );
+    void CreateCollisionPoints( RobotBasePtr robot );
 
     std::vector< distance_field::CollisionPoint > collision_points_;
 

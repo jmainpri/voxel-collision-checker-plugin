@@ -40,7 +40,7 @@ class CollisionPoint
 {
 public:
 
-    CollisionPoint(const std::vector<int>& parent_joints, double radius, double clearance, int segment_number, const OpenRAVE::Vector& position);
+    CollisionPoint(OpenRAVE::KinBody::JointPtr j, const std::vector<int>& parent_joints, double radius, double clearance, int segment_number, const OpenRAVE::Vector& position);
 
     CollisionPoint(const CollisionPoint &point, const std::vector<int>& parent_joints);
 
@@ -71,17 +71,20 @@ public:
                      const std::vector<int>& group_joint_to_move3d_joint_index) const;
                      */
 
-    void draw( std::vector< boost::shared_ptr<void> >& graphptr, const OpenRAVE::TransformMatrix& T, bool yellow=true) const;
+    void draw( std::vector< boost::shared_ptr<void> >& graphptr, OpenRAVE::EnvironmentBasePtr penv, bool yellow=true) const;
 
     bool m_is_colliding;                  /**< Collision point in collision */
 
 private:
+    OpenRAVE::KinBody::JointPtr m_joint; // Joint to draw the collision point
+
     std::vector<int> m_parent_joints;      /**< Which joints can influence the motion of this point */
     double m_radius;                       /**< Radius of the sphere */
     double m_volume;                       /**< Volume of the sphere */
     double m_clearance;                    /**< Extra clearance required while optimizing */
     double m_inv_clearance;                /**< 1/clearance_ pre-computed */
     int m_segment_number;                  /**< Which segment does this point belong to */
+
     OpenRAVE::Vector m_position;            /**< Vector of this point in the frame of the above segment */
 
     inline void stdVectorToEigenTransformMatrix(const std::vector<double>& stl, OpenRAVE::TransformMatrix& T) const

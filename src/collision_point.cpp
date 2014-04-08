@@ -4,11 +4,13 @@
 using namespace distance_field;
 
 CollisionPoint::CollisionPoint(
+        OpenRAVE::KinBody::JointPtr j,
         const std::vector<int>& parent_joints,
         double radius,
         double clearance,
         int segment_number,
         const OpenRAVE::Vector& position) :
+    m_joint(j),
     m_parent_joints(parent_joints),
     m_radius(radius),
     m_volume((4.0/3.0)*M_PI*m_radius*m_radius*m_radius),
@@ -60,27 +62,19 @@ void CollisionPoint::getJacobian(std::vector<OpenRAVE::Vector>& joint_pos,
 }
 */
 
-void CollisionPoint::draw( std::vector< boost::shared_ptr<void> >& graphptr, const OpenRAVE::TransformMatrix& T, bool yellow ) const
+void CollisionPoint::draw( std::vector< boost::shared_ptr<void> >& graphptr, OpenRAVE::EnvironmentBasePtr penv, bool yellow ) const
 {
-    // OpenRAVE::Vector point = T*m_position;
+    const OpenRAVE::TransformMatrix& T = m_joint->GetHierarchyParentLink()->GetTransform();
+    OpenRAVE::Vector point = T*m_position;
 
     // yellow
-//    double colorvector[4];
-//    colorvector[0] = 1.0;
-//    colorvector[1] = 1.0;
-//    colorvector[2] = 0.0;
-//    colorvector[3] = 0.7;
+    OpenRAVE::RaveVector<float> vcolors(1.0,1.0,0.0,0.1);
 
-//    glEnable(GL_BLEND);
-//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    std::vector<OpenRAVE::RaveVector<float> > vpoints;
+    OpenRAVE::RaveVector<float> pnt( point[0], point[1], point[2] );
+    vpoints.push_back( pnt );
 
-//    if (yellow)
-//    {
-//        glColor4dv(colorvector);
-//    }
-
-//    g3d_draw_solid_sphere( point[0], point[1], point[2], m_radius, 20 );
-//    glDisable(GL_BLEND);
+    graphptr.push_back( penv->plot3( &vpoints[0].x, vpoints.size(), sizeof( vpoints[0]), m_radius, vcolors, 1 ) );
 }
 
 BoundingCylinder::BoundingCylinder(const OpenRAVE::Vector& vect1, const OpenRAVE::Vector& vect2,
