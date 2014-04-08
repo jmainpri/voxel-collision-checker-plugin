@@ -20,20 +20,14 @@
 #define PADDING             0.1 // meters, padding for cost function
 
 
-//#endif
-//#ifdef wafoinwefionwef
-using namespace std;
-using namespace OpenRAVE;
-using namespace distance_field;
-
 double obstacleCost( double distance);
 
-VoxelGrid<int> createVoxelGrid(int compute_new_vg, EnvironmentBasePtr penv, RobotBasePtr robot, std::vector<KinBodyPtr>& colbodies );
+distance_field::VoxelGrid<int> createVoxelGrid( int compute_new_vg, OpenRAVE::EnvironmentBasePtr penv, OpenRAVE::RobotBasePtr robot, std::vector<OpenRAVE::KinBodyPtr>& colbodies );
 
-VoxelGrid<int> createEmptyVoxelGrid( RobotBasePtr robot );
+distance_field::VoxelGrid<int> createEmptyVoxelGrid( OpenRAVE::RobotBasePtr robot );
 
-PropagationDistanceField createPDFfromVoxelGrid( const VoxelGrid<int>& vg, EnvironmentBasePtr penv, std::vector< boost::shared_ptr<void> >& graphptr );
+PropagationDistanceField createPDFfromVoxelGrid( const distance_field::VoxelGrid<int>& vg, OpenRAVE::EnvironmentBasePtr penv, std::vector< boost::shared_ptr<void> >& graphptr );
 
-CostField  createCostFieldfromVoxelGrid( const VoxelGrid<int>& vg );
+CostField createCostFieldfromVoxelGrid( const distance_field::VoxelGrid<int>& vg );
 
 #endif /* INIT_OBS_FIELD_H */

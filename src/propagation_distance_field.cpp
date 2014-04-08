@@ -37,6 +37,8 @@
 #include <propagation_distance_field.hpp>
 //#include <visualization_msgs/Marker.h>
 
+using namespace OpenRAVE;
+
 namespace distance_field
 {
 

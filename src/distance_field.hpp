@@ -95,7 +95,7 @@ public:
    * @param default_object The object to return for an out-of-bounds query
    */
     DistanceField(double size_x, double size_y, double size_z, double resolution,
-                  Transform origin, T default_object);
+                  OpenRAVE::Transform origin, T default_object);
 
     virtual ~DistanceField();
 
@@ -162,7 +162,7 @@ DistanceField<T>::~DistanceField()
 
 template <typename T>
 DistanceField<T>::DistanceField(double size_x, double size_y, double size_z, double resolution,
-                                Transform origin_in, T default_object):
+                                OpenRAVE::Transform origin_in, T default_object):
     VoxelGrid<T>(size_x, size_y, size_z, resolution, origin_in, default_object)
 {
     // REMOVED ROS depedency

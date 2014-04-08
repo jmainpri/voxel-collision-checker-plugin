@@ -41,8 +41,6 @@
 #include <vector>
 #include <rave/rave.h>
 
-using namespace OpenRAVE;
-
 namespace distance_field
 {
 
@@ -64,7 +62,7 @@ public:
    * @param default_object The object to return for an out-of-bounds query
    */
     VoxelGrid(double size_x, double size_y, double size_z, double resolution,
-              Transform origin_in, T default_object);
+              OpenRAVE::Transform origin_in, T default_object);
     VoxelGrid(){}
 
     virtual ~VoxelGrid();
@@ -119,7 +117,7 @@ public:
   /**
    * \brief Gets the origin of the given dimension.
    */
-    Transform getOriginTransform() const;
+    OpenRAVE::Transform getOriginTransform() const;
 
   /**
    * \brief Gets the number of cells of the given dimension.
@@ -134,7 +132,7 @@ public:
     /**
    * \brief Converts grid coordinates to world coordinates.
    */
-    bool gridToWorldTransform(int x, int y, int z, Transform& T_out) const;
+    bool gridToWorldTransform(int x, int y, int z, OpenRAVE::Transform& T_out) const;
 
 
     /**
@@ -172,8 +170,8 @@ protected:
     int num_cells_total_;
     int stride1_;
     int stride2_;
-    Transform origin_;
-    Transform inv_origin_;
+    OpenRAVE::Transform origin_;
+    OpenRAVE::Transform inv_origin_;
 
     /**
    * \brief Gets the reference in the data_ array for the given integer x,y,z location
@@ -205,7 +203,7 @@ protected:
 
 template<typename T>
 VoxelGrid<T>::VoxelGrid(double size_x, double size_y, double size_z, double resolution,
-                        Transform origin_in, T default_object)
+                        OpenRAVE::Transform origin_in, T default_object)
 {
     size_[DIM_X] = size_x;
     size_[DIM_Y] = size_y;
@@ -276,7 +274,7 @@ inline double VoxelGrid<T>::getOrigin(Dimension dim) const
 }
 
 template<typename T>
-inline Transform VoxelGrid<T>::getOriginTransform() const
+inline OpenRAVE::Transform VoxelGrid<T>::getOriginTransform() const
 {
     return origin_;
 }
@@ -291,7 +289,7 @@ template<typename T>
 inline const T& VoxelGrid<T>::operator()(double x, double y, double z) const
 {
 
-    Vector point(x,y,z);
+    OpenRAVE::Vector point(x,y,z);
     point = inv_origin_*point;
 
     int cellX = round(0.5 + point.x/resolution_[DIM_X]);
@@ -360,7 +358,7 @@ inline void VoxelGrid<T>::reset(T initial)
 template<typename T>
 inline bool VoxelGrid<T>::gridToWorld(int x, int y, int z, double& world_x, double& world_y, double& world_z) const
 {
-    Vector point(resolution_[DIM_X]*(double(x)-0.5), resolution_[DIM_Y]*(double(y)-0.5), resolution_[DIM_Z]*(double(z)-0.5));
+    OpenRAVE::Vector point(resolution_[DIM_X]*(double(x)-0.5), resolution_[DIM_Y]*(double(y)-0.5), resolution_[DIM_Z]*(double(z)-0.5));
     point = origin_*point;
 
     world_x = point.x;
@@ -371,10 +369,10 @@ inline bool VoxelGrid<T>::gridToWorld(int x, int y, int z, double& world_x, doub
 
 
 template<typename T>
-inline bool VoxelGrid<T>::gridToWorldTransform(int x, int y, int z, Transform& T_out) const
+inline bool VoxelGrid<T>::gridToWorldTransform(int x, int y, int z, OpenRAVE::Transform& T_out) const
 {
-    T_out.rot = Vector(1,0,0,0);
-    T_out.trans = Vector(resolution_[DIM_X]*(double(x)-0.5), resolution_[DIM_Y]*(double(y)-0.5), resolution_[DIM_Z]*(double(z)-0.5));
+    T_out.rot = OpenRAVE::Vector(1,0,0,0);
+    T_out.trans = OpenRAVE::Vector(resolution_[DIM_X]*(double(x)-0.5), resolution_[DIM_Y]*(double(y)-0.5), resolution_[DIM_Z]*(double(z)-0.5));
     T_out = origin_*T_out;
     return true;
 }
@@ -384,7 +382,7 @@ template<typename T>
 inline bool VoxelGrid<T>::worldToGrid(double world_x, double world_y, double world_z, int& x, int& y, int& z) const
 {
 
-    Vector point(world_x,world_y,world_z);
+    OpenRAVE::Vector point(world_x,world_y,world_z);
     point = inv_origin_*point;
 
     x = round(0.5 + point.x/resolution_[DIM_X]);

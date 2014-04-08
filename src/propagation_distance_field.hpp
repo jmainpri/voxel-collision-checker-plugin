@@ -80,7 +80,7 @@ public:
    * \brief Constructor for the DistanceField.
    */
     PropagationDistanceField(double size_x, double size_y, double size_z, double resolution,
-                             Transform origin_in, double max_distance);
+                             OpenRAVE::Transform origin_in, double max_distance);
 
     virtual ~PropagationDistanceField();
 
@@ -99,6 +99,11 @@ public:
    */
     double getDistanceGradient(double x, double y, double z, double& gradient_x, double& gradient_y, double& gradient_z) const;
 
+    /**
+      * \brief Returns the distance to the closest obstacle
+      */
+    virtual double getDistance(const PropDistanceFieldVoxel& object) const;
+
 private:
     std::vector<std::vector<PropDistanceFieldVoxel*> > bucket_queue_;
     double max_distance_;
@@ -116,7 +121,6 @@ private:
 
     std::vector<std::vector<int> > direction_number_to_direction_;
 
-    virtual double getDistance(const PropDistanceFieldVoxel& object) const;
     int getDirectionNumber(int dx, int dy, int dz) const;
     void initNeighborhoods();
     static int eucDistSq(int* point1, int* point2);

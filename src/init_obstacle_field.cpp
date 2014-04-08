@@ -15,7 +15,7 @@ string convertInt(int number)
  * Computes the color gradiant
  * color: the output vector
  * x: the gradiant (beetween 0 and 360)
- * min and max: variation of the RGB channels (Move3D 0 -> 1)
+ * min and max: variation of the RGB channels
  */
 void GroundColorMix( std::vector<float>& color, double x, double min, double max)
 {
@@ -77,15 +77,15 @@ void GroundColorMix( std::vector<float>& color, double x, double min, double max
  * x: the gradiant beetween 0 (Green) and 1 (Red)
  * min and max: variation of the RGB channels (Move3D 0 -> 1)
  */
-void GroundColorMixGreenToRed( std::vector<float>& color, double x)
+void GroundColorMixGreenToRed( std::vector<float>& color, double s )
 {
-    if (x>1) {
-        x = 1;
+    if (s>1) {
+        s = 1;
     }
-    if (x<0) {
-        x=0;
+    if (s<0) {
+        s=0;
     }
-    GroundColorMix(color, 180*(1 - x), 0, 1);
+    GroundColorMix(color, 180*(1 - s), 0, 1);
 }
 
 VoxelGrid<int> createEmptyVoxelGrid(RobotBasePtr robot)
@@ -110,7 +110,7 @@ VoxelGrid<int> createEmptyVoxelGrid(RobotBasePtr robot)
     // origin.trans.x = robotT.trans.x-VG_OFFSET;
     // origin.trans.y = robotT.trans.y-VG_OFFSET;
     // origin.trans.z = robotT.trans.z-(ROBOT_HEIGHT-VOXEL_RES);
-    VoxelGrid<int> vg(2.0,2.0,2.0, VOXEL_RES, origin, OOB);
+    VoxelGrid<int> vg( 2.0, 2.0, 2.0, VOXEL_RES, origin, OOB );
     vg.reset(0);
 
     return vg;
@@ -141,12 +141,15 @@ VoxelGrid<int> createVoxelGrid(int compute_new_vg, EnvironmentBasePtr penv, Robo
     }
 
     VoxelGrid<int> vg = createEmptyVoxelGrid(robot);
+
     int numX = vg.getNumCells(VoxelGrid<int>::DIM_X);
     int numY = vg.getNumCells(VoxelGrid<int>::DIM_Y);
     int numZ = vg.getNumCells(VoxelGrid<int>::DIM_Z);
+
     double oX = vg.getOrigin(VoxelGrid<int>::DIM_X);
     double oY = vg.getOrigin(VoxelGrid<int>::DIM_Y);
     double oZ = vg.getOrigin(VoxelGrid<int>::DIM_Z);
+
     RAVELOG_INFOA("Voxel Grid size %dx%dx%d cells, origin (%f,%f,%f)\n", numX, numY, numZ, oX, oY, oZ);
 
     //if (COMPUTE_NEW_VG) { // collision check and write to file
@@ -192,8 +195,8 @@ VoxelGrid<int> createVoxelGrid(int compute_new_vg, EnvironmentBasePtr penv, Robo
             for (int y=0; y<numY; y++)
                 for (int z=0; z<numZ; z++)
                 {
-                    //vg.gridToWorld(x,y,z, posn[0], posn[1],posn[2]sdf);
-                    //voxelT.trans = posn; // set collision sphere to voxel position
+                    // vg.gridToWorld(x,y,z, posn[0], posn[1],posn[2]sdf);
+                    // voxelT.trans = posn; // set collision sphere to voxel position
                     vg.gridToWorldTransform( x, y ,z, voxelT );
                     unitCollision->SetTransform(voxelT);
                     if(colbodies.size() == 0)
@@ -383,8 +386,7 @@ PropagationDistanceField createPDFfromVoxelGrid( const VoxelGrid<int>& vg, Envir
 //        cout << "\n";
 //    }
 
-//#ifdef 0
-
+//#if 0
     cout << "resolution : " << res << endl;
 
     double posn[3];
@@ -402,13 +404,13 @@ PropagationDistanceField createPDFfromVoxelGrid( const VoxelGrid<int>& vg, Envir
                 if (y==0 || y==numY-1) isBound++;
                 if (z==0 || z==numZ-1) isBound++;
 
-                double distance_obst = std::sqrt( PDF.getCell(x,y,z).distance_square_ );
+                double distance_obst = PDF.getDistance( PDF.getCell(x,y,z) );
 
-                if( distance_obst < 3.0  || isBound > 2 ) // voxel if collision or an edge of grid
+                if( distance_obst < .05  || isBound > 2 ) // voxel if collision or an edge of grid
                 {
                     PDF.gridToWorld( x, y, z, posn[0], posn[1], posn[2] );
 
-                    double alpha = distance_obst / 10;
+                    double alpha = distance_obst; // / 10 ;
 
                     if ( alpha < 0.0 )
                     { alpha = 0.0; }
@@ -419,14 +421,13 @@ PropagationDistanceField createPDFfromVoxelGrid( const VoxelGrid<int>& vg, Envir
                     if ( inverse )
                     { alpha = 1 - alpha; }
 
-
                     GroundColorMixGreenToRed( vcolors, alpha );
 
                     std::vector<OpenRAVE::RaveVector<float> > vpoints;
-                    OpenRAVE::RaveVector<float> pnt(posn[0], posn[1], posn[2]);
-                    vpoints.push_back(pnt);
+                    OpenRAVE::RaveVector<float> pnt( posn[0], posn[1], posn[2] );
+                    vpoints.push_back( pnt );
 
-                    graphptr.push_back( penv->plot3( &vpoints[0].x, vpoints.size(), sizeof(vpoints[0]), res/2, &vcolors[0], 1 ) );
+                    graphptr.push_back( penv->plot3( &vpoints[0].x, vpoints.size(), sizeof( vpoints[0]), res/2, &vcolors[0], 1 ) );
                 }
                 //#endif
                 // cout << "cell : " << x << " " << y << " " << z << endl;

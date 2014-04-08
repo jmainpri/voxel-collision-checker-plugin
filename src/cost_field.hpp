@@ -52,7 +52,7 @@ public:
    * @param default_object The object to return for an out-of-bounds query
    */
     CostField(double size_x, double size_y, double size_z, double resolution,
-              Transform origin_in, double default_cost);
+              OpenRAVE::Transform origin_in, double default_cost);
     CostField(){}
     virtual ~CostField();
 
@@ -96,7 +96,7 @@ inline CostField::~CostField()
 }
 
 inline CostField::CostField(double size_x, double size_y, double size_z, double resolution,
-                            Transform origin_in, double default_cost):
+                            OpenRAVE::Transform origin_in, double default_cost):
     VoxelGrid<double>(size_x, size_y, size_z, resolution, origin_in, default_cost)
 {
     // set the voxel grid parameters
