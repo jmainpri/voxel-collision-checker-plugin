@@ -5,8 +5,9 @@
 #include <fstream>
 #include <string>
 #include "voxel_grid.hpp"
-#include <propagation_distance_field.hpp>
+#include "propagation_distance_field.hpp"
 #include "cost_field.hpp"
+#include "collision_point.hpp"
 
 #include "stdafx.h"
 
@@ -29,5 +30,7 @@ distance_field::VoxelGrid<int> createEmptyVoxelGrid( OpenRAVE::RobotBasePtr robo
 PropagationDistanceField createPDFfromVoxelGrid( const distance_field::VoxelGrid<int>& vg, OpenRAVE::EnvironmentBasePtr penv, std::vector< boost::shared_ptr<void> >& graphptr );
 
 CostField createCostFieldfromVoxelGrid( const distance_field::VoxelGrid<int>& vg );
+
+std::vector<CollisionPoint> createCollionPointsForPr2( OpenRAVE::KinBodyPtr body );
 
 #endif /* INIT_OBS_FIELD_H */

@@ -584,3 +584,10 @@ double obstacleCost( double distance) // smooth obstacle cost -- 0 for positive 
     }
 }
 
+std::vector<CollisionPoint> createCollionPointsForPr2( OpenRAVE::KinBodyPtr body )
+{
+    std::vector<CollisionPoint> collision_points;
+    return collision_points;
+
+}
+

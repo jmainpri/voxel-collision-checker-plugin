@@ -1,6 +1,8 @@
 #include "collision_point.hpp"
 #include <cmath>
 
+using namespace distance_field;
+
 CollisionPoint::CollisionPoint(
         const std::vector<int>& parent_joints,
         double radius,

@@ -71,9 +71,11 @@ if __name__ == "__main__":
     collisionChecker = RaveCreateCollisionChecker( orEnv,'VoxelColChecker')
     orEnv.SetCollisionChecker( collisionChecker )
 
- 
     print "checking collision for robot : " + robot.GetName()
-    #orEnv.CheckCollision( robot )
+    report = CollisionReport()
+    orEnv.CheckCollision( robot, report )
+    print 'mindist: ',report.minDistance
+    print 'contacts: ', report.contacts
     
     print "Press return to exit."
     sys.stdin.readline()

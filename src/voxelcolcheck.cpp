@@ -33,13 +33,16 @@ VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv): OpenRAVE:
 
     bDraw_ = true;
 
+    cout << __PRETTY_FUNCTION__ << endl;
+
     std::vector<RobotBasePtr> robots;
-    penv->GetRobots( robots );
+    GetEnv()->GetRobots( robots );
 
-    if( !robots.empty() ) {
-
+    if( !robots.empty() )
+    {
+        // List obstacle bodies
         std::vector<KinBodyPtr> colbodies;
-        penv->GetBodies( colbodies );
+        GetEnv()->GetBodies( colbodies );
 
         int robot_id = 0;
 
@@ -53,11 +56,58 @@ VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv): OpenRAVE:
 
         colbodies.erase( colbodies.begin() + robot_id );
 
+        // Create sdf
         VoxelGrid<int> vg = createVoxelGrid( COMPUTE_NEW_VG, GetEnv(), robots[0], colbodies );
         sdf_ = createPDFfromVoxelGrid( vg, GetEnv(), graphptrs_ );
+
+        CreateCollisionPoints( robots[0] );
+
+        bInitialized_ = true;
+    }
+}
+
+bool VoxelCollisionChecker::InitEnvironment()
+{
+    // Gegister bodies
+    std::vector<KinBodyPtr> allbodies;
+    GetEnv()->GetBodies( allbodies );
+
+    for( size_t i = 0; i < allbodies.size(); i++ )
+    {
+        cout << "name : " << allbodies[i]->GetName() << endl;
+        InitKinBody( allbodies[i] );
     }
 
-    bInitialized_ = true;
+    return true;
+}
+
+/// notified when a new body has been initialized in the environment
+bool VoxelCollisionChecker::InitKinBody(KinBodyPtr pbody)
+{
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    UserDataPtr pdata( new UserData() );
+    SetCollisionData( pbody, pdata );
+    return true;
+}
+
+void VoxelCollisionChecker::CreateCollisionPoints( KinBodyPtr pbody )
+{
+    if( pbody->GetName() == "pr2" )
+    {
+            cout << "Compute collision points for PR2" << endl;
+
+    }
+    else {
+        RAVELOG_INFO("Does not know how to compute collision points for kinbody : %s\n" , pbody->GetName().c_str() );
+    }
+}
+
+// main function for collision checking of robot
+bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, CollisionReportPtr report)
+{
+    cout << __PRETTY_FUNCTION__ << std::endl;
+    cout << " -- main collision detection function" << endl;
+    return false;
 }
 
 bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, std::vector<std::vector<Vector> >& vvLinkPoints, CollisionReportPtr report)

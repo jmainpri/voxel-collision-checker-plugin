@@ -8,6 +8,9 @@
 
 // #include "planner/TrajectoryOptim/Chomp/chompUtils.hpp"
 
+namespace distance_field
+{
+
 class BoundingCylinder
 {
 public:
@@ -147,6 +150,8 @@ inline void CollisionPoint::getTransformMatrixedPosition(std::vector<std::vector
     OpenRAVE::TransformMatrix T;
     stdVectorToEigenTransformMatrix( segment_frames[m_segment_number], T );
     position = T*m_position;
+}
+
 }
 
 #endif // COLLISION_POINT_HPP
