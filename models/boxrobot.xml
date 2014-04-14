@@ -1,0 +1,35 @@
+<Robot name="boxbot2">
+
+<Robot file="virtual2dof.robot.xml"/>
+
+    <KinBody>
+
+        <Body name="Box0" type="dynamic">
+            <Translation>0.0 0.0 0.0</Translation>
+            <Geom type="cylinder">
+                <Translation>0 0 0</Translation>
+                <RotationAxis>1 0 0 90</RotationAxis>
+                <radius>10</radius>
+                <height>10</height>
+                <diffuseColor>0 1.0 0</diffuseColor>
+            </Geom>
+        </Body>
+        <!--  declare a dummy joint to lock the box in place  -->
+
+        <Joint name="dummy" type="hinge" enable="false">
+            <Body>End</Body>
+            <Body>Box0</Body>
+            <limits>0 0</limits>
+        </Joint>
+
+    </KinBody>
+
+    <!--  Specifying the manipulator structure -->
+    <Manipulator name="arm">
+        <effector>Box0</effector>
+        <!--  last link where end effector is attached -->
+        <base>Base</base>
+        <!--  base link -->
+    </Manipulator>
+
+</Robot>

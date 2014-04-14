@@ -1,0 +1,70 @@
+<Robot name="virtual2dof">
+<KinBody>
+<!--  Create the base body, it should never move -->
+<!--
+ Note that all translations and rotations are with respect to this base
+-->
+<!--
+ For example, the robot at the identity transformation is equivalent to the identity transformation of the first body.
+-->
+<Body name="Base" type="dynamic">
+<Translation>0.0 0.0 0.0</Translation>
+
+</Body>
+<!--  the second dummy link -->
+<Body name="fake1" type="dynamic">
+<!--
+ Offset from is a fast way of specifying that the translation and rotation of this
+-->
+<!--  body should be relative to another link -->
+<offsetfrom>Base</offsetfrom>
+<!--  Translation relative to Base -->
+<Translation>0 0 0</Translation>
+
+</Body>
+
+
+<!--  the seventh dummy link -->
+<Body name="End" type="dynamic">
+<!--
+ Offset from is a fast way of specifying that the translation and rotation of this
+-->
+<!--  body should be relative to another link -->
+<offsetfrom>fake1</offsetfrom>
+<!--  Translation relative to Base -->
+<Translation>0 0 0</Translation>
+
+</Body>
+
+<!--  declare a prismatic x joint  -->
+<Joint circular="false" name="tranX" type="slider">
+<Body>Base</Body>
+<Body>fake1</Body>
+<axis>1 0 0</axis>
+<limits>-50.0 450.0</limits>
+<maxvel>30</maxvel>
+<resolution>1</resolution>
+</Joint>
+
+
+<!--  declare a prismatic y joint  -->
+<Joint circular="false" name="tranY" type="slider">
+<Body>fake1</Body>
+<Body>End</Body>
+<axis>0 1 0</axis>
+<limits>0 800.0</limits>
+<maxvel>30</maxvel>
+<resolution>1</resolution>
+</Joint>
+
+</KinBody>
+
+<!--  Specifying the manipulator structure -->
+<Manipulator name="v2d">
+<effector>End</effector>
+<!--  last link where end effector is attached -->
+<base>Base</base>
+<!--  base link -->
+</Manipulator>
+
+</Robot>

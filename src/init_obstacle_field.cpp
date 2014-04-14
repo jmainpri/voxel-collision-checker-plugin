@@ -88,6 +88,29 @@ void GroundColorMixGreenToRed( std::vector<float>& color, double s )
     GroundColorMix(color, 180*(1 - s), 0, 1);
 }
 
+static double grid_size_x = 2.0;
+static double grid_size_y = 4.0;
+static double grid_size_z = 0.5;
+static double VOXEL_RES = 0.025;
+static Transform grid_origin;
+static double draw_distance = 0.7;
+static double draw_blue_threshold = 0.7;
+
+void setDrawingDistance( double dist, double threshold )
+{
+    draw_distance = dist;
+    draw_blue_threshold = threshold;
+}
+
+void setVoxelGridSize(double x, double y, double z, double res, Transform origin )
+{
+    grid_size_x = x;
+    grid_size_y = y;
+    grid_size_z = z;
+    VOXEL_RES = res;
+    grid_origin = origin;
+}
+
 VoxelGrid<int> createEmptyVoxelGrid(RobotBasePtr robot)
 {
     // center the grid around the robot and limit to volume in robot's reach (arm length ~1.5m)
@@ -95,22 +118,27 @@ VoxelGrid<int> createEmptyVoxelGrid(RobotBasePtr robot)
     OpenRAVE::Transform robotT; // robot position
     //robotT = robot->GetLinks()[1]->GetTransform();
     robotT = robot->GetTransform();
+
     Transform origin;
     Transform Toffset;
     Toffset.trans.x = -1;
-    Toffset.trans.y = -1;
-    Toffset.trans.z = 0.5;//-(ROBOT_HEIGHT-VOXEL_RES);
+    Toffset.trans.y = -1.5;
+    Toffset.trans.z = 1.3;//-(ROBOT_HEIGHT-VOXEL_RES);
 
     // Toffset.trans.x = -VG_OFFSET/2;
     // Toffset.trans.y = -VG_OFFSET/1.25-0.1;
     // Toffset.trans.z = 0;//-(ROBOT_HEIGHT-VOXEL_RES);
+
+    // WARNING REMOVE TO HAVE ROBOT CENTERED GRID
+    robotT = origin;
 
     origin = robotT*Toffset;
     // origin.rot = robotT.rot;
     // origin.trans.x = robotT.trans.x-VG_OFFSET;
     // origin.trans.y = robotT.trans.y-VG_OFFSET;
     // origin.trans.z = robotT.trans.z-(ROBOT_HEIGHT-VOXEL_RES);
-    VoxelGrid<int> vg( 2.0, 2.0, 2.0, VOXEL_RES, origin, OOB );
+    // 2.0 2
+    VoxelGrid<int> vg( grid_size_x, grid_size_y, grid_size_z, VOXEL_RES, origin, OOB );
     vg.reset(0);
 
     return vg;
@@ -386,17 +414,25 @@ PropagationDistanceField createPDFfromVoxelGrid( const VoxelGrid<int>& vg, Envir
 //        cout << "\n";
 //    }
 
-#if 0
+//#if 0
     cout << "resolution : " << res << endl;
 
     double posn[3];
     std::vector<float> vcolors(3);
     bool inverse = true;
 
+    std::vector<float> x_slices(2);
+    x_slices[0] = 20;
+    x_slices[1] = 60;
+
+    // for (int i=0; i<int(x_slices.size()); i++){
+    //int x = x_slices[i];
     for (int x=0; x<numX; x++){
         for (int y=0; y<numY; y++)
             for (int z=0; z<numZ; z++)
             {
+            // int z = 5; // Draw one slice
+
                 // #if 1 // show all voxels
                 int isBound = 0;
 
@@ -406,11 +442,11 @@ PropagationDistanceField createPDFfromVoxelGrid( const VoxelGrid<int>& vg, Envir
 
                 double distance_obst = PDF.getDistance( PDF.getCell(x,y,z) );
 
-                if( distance_obst < .05  || isBound > 2 ) // voxel if collision or an edge of grid
+                if( distance_obst < draw_distance  || isBound > 2 ) // voxel if collision or an edge of grid
                 {
                     PDF.gridToWorld( x, y, z, posn[0], posn[1], posn[2] );
 
-                    double alpha = distance_obst; // / 10 ;
+                    double alpha = distance_obst / draw_blue_threshold; // / 10 ;
 
                     if ( alpha < 0.0 )
                     { alpha = 0.0; }
@@ -434,7 +470,7 @@ PropagationDistanceField createPDFfromVoxelGrid( const VoxelGrid<int>& vg, Envir
             }
         // cout << "cell : " << x << endl;
     }
-#endif
+//#endif
 
     return(PDF);
 }
@@ -587,13 +623,13 @@ double obstacleCost( double distance) // smooth obstacle cost -- 0 for positive 
 //! Generates the collision point for a given link
 //! Stores the segment number (the id of the joint for planning)
 //! Also store the parent joints of the link
-std::vector<CollisionPoint> getLinksCollisionPoints( OpenRAVE::KinBody::JointPtr j, Vector p1, Vector p2, int segment_number, const std::vector<int>& parent_joints )
+std::vector<CollisionPoint> getLinksCollisionPoints( OpenRAVE::KinBody::JointPtr j, Vector p1, Vector p2, int segment_number, const std::vector<int>& parent_joints, double radius )
 {
     std::vector<CollisionPoint> collision_points;
 
     double collision_clearance_default(0.10);
 
-    double radius = 0.20; // bc->getRadius();
+    // double radius = 0.20; // bc->getRadius();
 
     double length = std::sqrt( (p1-p2).lengthsqr2() ); // bc->getLength();
 
@@ -612,7 +648,7 @@ std::vector<CollisionPoint> getLinksCollisionPoints( OpenRAVE::KinBody::JointPtr
     return collision_points;
 }
 
-std::vector<CollisionPoint> createCollionPointsForPr2( OpenRAVE::RobotBasePtr robot )
+std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::RobotBasePtr robot )
 {
     std::vector<CollisionPoint> collision_points;
 
@@ -642,11 +678,31 @@ std::vector<CollisionPoint> createCollionPointsForPr2( OpenRAVE::RobotBasePtr ro
 
         std::vector<int> parent_joints;
 
-        std::vector<CollisionPoint> new_points = getLinksCollisionPoints( j1, p1, p2, i, parent_joints );
+        double radius = 0.2;
+
+        if( robot->GetName() == "Pr2" ){
+            radius = 0.2;
+        }
+        if( robot->GetName() == "Puck" ){
+            radius = 20.0;
+            j1 = j2;
+        }
+
+        std::vector<CollisionPoint> new_points = getLinksCollisionPoints( j1, p1, p2, i, parent_joints, radius );
 
         collision_points.insert( collision_points.end(), new_points.begin(), new_points.end() );
     }
 
     return collision_points;
+}
+
+std::vector<CollisionPoint> createCollionPointsForPr2( OpenRAVE::RobotBasePtr robot )
+{
+    return createCollionPointsForRobot( robot );
+}
+
+std::vector<CollisionPoint> createCollionPointsForPuck( OpenRAVE::RobotBasePtr robot )
+{
+    return createCollionPointsForRobot( robot );
 }
 

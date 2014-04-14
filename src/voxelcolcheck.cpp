@@ -56,6 +56,18 @@ VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv): OpenRAVE:
 
         colbodies.erase( colbodies.begin() + robot_id );
 
+        if( robots[0]->GetName() == "Puck" )
+        {
+            Transform origin;
+            origin.trans.x = 200;
+            origin.trans.y = 400;
+            origin.trans.z = 0;
+
+            setVoxelGridSize( 500, 800, 30, 5, origin );
+
+            setDrawingDistance( 20, 50 );
+        }
+
         // Create sdf
         VoxelGrid<int> vg = createVoxelGrid( COMPUTE_NEW_VG, GetEnv(), robots[0], colbodies );
         sdf_ = createPDFfromVoxelGrid( vg, GetEnv(), graphptrs_ );
@@ -96,8 +108,13 @@ void VoxelCollisionChecker::CreateCollisionPoints( RobotBasePtr robot )
 
     if( robot->GetName() == "pr2" )
     {
-            cout << "Compute collision points for PR2" << endl;
+            cout << "Compute collision points for " << robot->GetName() << endl;
             collision_points_ = createCollionPointsForPr2( robot );
+    }
+    else if( robot->GetName() == "Puck" )
+    {
+            cout << "Compute collision points for " << robot->GetName() << endl;
+            collision_points_ = createCollionPointsForPuck( robot );
     }
     else {
         RAVELOG_INFO("Does not know how to compute collision points for kinbody : %s\n" , robot->GetName().c_str() );
@@ -112,8 +129,8 @@ void VoxelCollisionChecker::CreateCollisionPoints( RobotBasePtr robot )
 // main function for collision checking of robot
 bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, CollisionReportPtr report)
 {
-    cout << __PRETTY_FUNCTION__ << std::endl;
-    cout << " -- main collision detection function" << endl;
+//    cout << __PRETTY_FUNCTION__ << std::endl;
+//    cout << " -- main collision detection function" << endl;
 
     OpenRAVE::Vector p;
     double distance_obst;
@@ -132,7 +149,17 @@ bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, CollisionRepo
             collision_points_[i].m_is_colliding = true;
             in_collision = true;
         }
+
+        // cout << " distance_obst : " << distance_obst << endl;
+
+        // OpenRAVE::RaveVector<float> vcolors(1.0, collision_points_[i].m_is_colliding ? 0.0 : 1.0 ,0.0,0.1);
+        // std::vector<OpenRAVE::RaveVector<float> > vpoints;
+        // vpoints.push_back( p );
+        // graphptrs_.push_back( GetEnv()->plot3( &vpoints[0].x, vpoints.size(), sizeof( vpoints[0]), collision_points_[i].getRadius(), vcolors, 1 ) );
     }
+
+    // cout << " in_collision : " << in_collision << endl;
+
     return in_collision;
 }
 

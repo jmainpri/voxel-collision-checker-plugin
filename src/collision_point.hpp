@@ -157,7 +157,9 @@ inline void CollisionPoint::getTransformMatrixedPosition(std::vector<std::vector
 
 inline void CollisionPoint::getTransformMatrixedPosition( OpenRAVE::Vector& position ) const
 {
-    const OpenRAVE::Transform& T = m_joint->GetHierarchyParentLink()->GetTransform();
+    // const OpenRAVE::Transform& T = m_joint->GetHierarchyParentLink()->GetTransform();
+    // const OpenRAVE::Transform& T = m_joint->GetSecondAttached()->GetTransform();
+    const OpenRAVE::Transform& T = m_joint->GetHierarchyChildLink()->GetTransform();
     position = T*m_position;
 }
 
