@@ -116,23 +116,23 @@ VoxelGrid<int> createEmptyVoxelGrid(RobotBasePtr robot)
     // center the grid around the robot and limit to volume in robot's reach (arm length ~1.5m)
     int OOB = -100; // out of bounds query return
     OpenRAVE::Transform robotT; // robot position
-    //robotT = robot->GetLinks()[1]->GetTransform();
-    robotT = robot->GetTransform();
+    // robotT = robot->GetLinks()[1]->GetTransform();
+    // robotT = robot->GetTransform();
 
-    Transform origin;
-    Transform Toffset;
-    Toffset.trans.x = -1;
-    Toffset.trans.y = -1.5;
-    Toffset.trans.z = 1.3;//-(ROBOT_HEIGHT-VOXEL_RES);
+    Transform origin = grid_origin;
+    // Transform Toffset;
+    // Toffset.trans.x = -1;
+    // Toffset.trans.y = -1.5;
+    // Toffset.trans.z = 1.3;//-(ROBOT_HEIGHT-VOXEL_RES);
 
     // Toffset.trans.x = -VG_OFFSET/2;
     // Toffset.trans.y = -VG_OFFSET/1.25-0.1;
     // Toffset.trans.z = 0;//-(ROBOT_HEIGHT-VOXEL_RES);
 
     // WARNING REMOVE TO HAVE ROBOT CENTERED GRID
-    robotT = origin;
+    // robotT = origin;
 
-    origin = robotT*Toffset;
+    // origin = robotT*Toffset;
     // origin.rot = robotT.rot;
     // origin.trans.x = robotT.trans.x-VG_OFFSET;
     // origin.trans.y = robotT.trans.y-VG_OFFSET;

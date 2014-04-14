@@ -62,10 +62,17 @@ VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv): OpenRAVE:
             origin.trans.x = 200;
             origin.trans.y = 400;
             origin.trans.z = 0;
-
             setVoxelGridSize( 500, 800, 30, 5, origin );
-
             setDrawingDistance( 20, 50 );
+        }
+
+        if( robots[0]->GetName() == "pr2" )
+        {
+            Transform origin = robots[0]->GetTransform();
+            origin.trans.y -= 1.00;
+            origin.trans.z += 0.50;
+            setVoxelGridSize( 2.0, 2.0, 1.5, 0.025, origin );
+            setDrawingDistance( .10, .30 );
         }
 
         // Create sdf

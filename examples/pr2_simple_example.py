@@ -50,6 +50,13 @@ if __name__ == "__main__":
     orEnv.Load('robots/pr2-beta-static.zae')
     orEnv.Load('data/shelf.kinbody.xml')
 
+    T_cam = array(  [[ 0.81240217, -0.20717684,  0.54505089, -1.11184239], \
+                     [-0.58198477, -0.34581952,  0.73600448, -2.30210519], \
+                     [ 0.03600615, -0.91514295, -0.40151829,  2.17947888], \
+                     [ 0.,          0.,          0.,          1.        ]] )
+
+    orEnv.GetViewer().SetCamera( T_cam )
+
     T = eye(4)
     T[0,3] = 0.0
     T[1,3] = 0.0
@@ -93,3 +100,5 @@ if __name__ == "__main__":
     
     print "Press return to exit."
     sys.stdin.readline()
+
+    print orEnv.GetViewer().GetCameraTransform()
