@@ -59,9 +59,9 @@ VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv): OpenRAVE:
         if( robots[0]->GetName() == "Puck" )
         {
             Transform origin;
-            origin.trans.x = 200;
-            origin.trans.y = 400;
-            origin.trans.z = 0;
+//            origin.trans.x = 200;
+//            origin.trans.y = 400;
+//            origin.trans.z = 0;
             setVoxelGridSize( 500, 800, 30, 5, origin );
             setDrawingDistance( 20, 50 );
         }
