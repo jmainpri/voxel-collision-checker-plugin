@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "dvxlcolcheck.hpp"
+
 #define DEFAULT_SIA 0.5
 #define DEFAULT_DIA 0.5
 

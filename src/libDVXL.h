@@ -1,3 +1,6 @@
+#ifndef LIBDVXL_H
+#define LIBDVXL_H
+
 #include "stdlib.h"
 #include "stdio.h"
 #include <string>
@@ -9,9 +12,6 @@
 #include <exception>
 #include <stdexcept>
 #include "voxel_grid.hpp"
-
-#ifndef LIBDVXL_H
-#define LIBDVXL_H
 
 typedef struct dvxl
 {

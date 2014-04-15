@@ -61,8 +61,8 @@ public:
     }
 
     void getTransformMatrixedPosition( OpenRAVE::Vector& position ) const;
-    void getTransformMatrixedPosition(std::vector<OpenRAVE::TransformMatrix>& segment_frames, OpenRAVE::Vector& position) const;
-    void getTransformMatrixedPosition(std::vector<std::vector<double> >& segment_frames, OpenRAVE::Vector& position) const;
+    void getTransformMatrixedPosition( std::vector<OpenRAVE::TransformMatrix>& segment_frames, OpenRAVE::Vector& position ) const;
+    void getTransformMatrixedPosition( std::vector<std::vector<double> >& segment_frames, OpenRAVE::Vector& position ) const;
 
     /*
     void getJacobian(std::vector<OpenRAVE::Vector>& joint_pos,
@@ -73,6 +73,7 @@ public:
                      */
 
     void draw( std::vector< boost::shared_ptr<void> >& graphptr, OpenRAVE::EnvironmentBasePtr penv, bool yellow=true) const;
+
 
     bool m_is_colliding;                  /**< Collision point in collision */
 

@@ -4,12 +4,13 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "voxel_grid.hpp"
-#include "propagation_distance_field.hpp"
-#include "cost_field.hpp"
-#include "collision_point.hpp"
 
 #include "stdafx.h"
+
+#include "voxel_grid.hpp"
+#include "propagation_distance_field.hpp"
+//#include "cost_field.hpp"
+#include "collision_point.hpp"
 
 #define COMPUTE_NEW_VG         1   //whether to recompute voxel grid or read from file
 #define LARGE_DISTANCE      10.0 //meters, large distance to move robot out of the way for collision checking
@@ -30,11 +31,11 @@ distance_field::VoxelGrid<int> createVoxelGrid( int compute_new_vg, OpenRAVE::En
 
 distance_field::VoxelGrid<int> createEmptyVoxelGrid( OpenRAVE::RobotBasePtr robot );
 
-PropagationDistanceField createPDFfromVoxelGrid( const distance_field::VoxelGrid<int>& vg, OpenRAVE::EnvironmentBasePtr penv, std::vector< boost::shared_ptr<void> >& graphptr );
+distance_field::PropagationDistanceField createPDFfromVoxelGrid( const distance_field::VoxelGrid<int>& vg, OpenRAVE::EnvironmentBasePtr penv, std::vector< boost::shared_ptr<void> >& graphptr );
 
-CostField createCostFieldfromVoxelGrid( const distance_field::VoxelGrid<int>& vg );
+// CostField createCostFieldfromVoxelGrid( const distance_field::VoxelGrid<int>& vg );
 
-std::vector<CollisionPoint> createCollionPointsForPr2( OpenRAVE::RobotBasePtr body );
-std::vector<CollisionPoint> createCollionPointsForPuck( OpenRAVE::RobotBasePtr body );
+std::vector<distance_field::CollisionPoint> createCollionPointsForPr2( OpenRAVE::RobotBasePtr body );
+std::vector<distance_field::CollisionPoint> createCollionPointsForPuck( OpenRAVE::RobotBasePtr body );
 
 #endif /* INIT_OBS_FIELD_H */

@@ -478,6 +478,8 @@ PropagationDistanceField createPDFfromVoxelGrid( const VoxelGrid<int>& vg, Envir
 /* Create signed distance field from a voxel grid
 Signed distance field is the difference between the Euclidean distance field (EDT) of the voxel grid and the EDT of the voxel grid complement
 */
+
+/*
 CostField  createCostFieldfromVoxelGrid( const VoxelGrid<int>& vg )
 {
     // initialize a distance field based on the voxel grid size
@@ -608,6 +610,7 @@ CostField  createCostFieldfromVoxelGrid( const VoxelGrid<int>& vg )
 
     return(SDF);
 }
+*/
 
 double obstacleCost( double distance) // smooth obstacle cost -- 0 for positive distance for 
 {
@@ -705,4 +708,3 @@ std::vector<CollisionPoint> createCollionPointsForPuck( OpenRAVE::RobotBasePtr r
 {
     return createCollionPointsForRobot( robot );
 }
-

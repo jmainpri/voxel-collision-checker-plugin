@@ -1,6 +1,8 @@
 #ifndef DVXLCOLCHECK_H
 #define DVXLCOLCHECK_H
+
 #include "stdafx.h"
+#include "libDVXL.h"
 
 //this collision checker currently fills the numWithinTol variable of the CollisionReport, nothing more
 class DVXLCollisionChecker : public OpenRAVE::CollisionCheckerBase

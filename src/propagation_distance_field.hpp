@@ -169,5 +169,6 @@ inline double PropagationDistanceField::getDistanceGradient(double x, double y, 
 }
 
 }
+// namespace distance_field
 
 #endif /* DF_PROPAGATION_DISTANCE_FIELD_H_ */

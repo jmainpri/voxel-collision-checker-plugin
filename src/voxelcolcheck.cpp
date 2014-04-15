@@ -15,6 +15,14 @@
 
 #include "stdafx.h"
 
+#include "voxelcolcheck.hpp"
+#include "voxel_grid.hpp"
+#include "propagation_distance_field.hpp"
+#include "collision_point.hpp"
+#include "init_obstacle_field.hpp"
+
+using namespace distance_field;
+
 VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv, VoxelGrid<int>& vg_in, Transform Tvg_in): OpenRAVE::CollisionCheckerBase(penv) /*vg_(1.0,1.0,1.0,0.5,Transform(),-10)*/ ,
     sdf_( 1.0,1.0,1.0, 0.5, Transform(), 1.0 )
 {
@@ -58,11 +66,7 @@ VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv): OpenRAVE:
 
         if( robots[0]->GetName() == "Puck" )
         {
-            Transform origin;
-//            origin.trans.x = 200;
-//            origin.trans.y = 400;
-//            origin.trans.z = 0;
-            setVoxelGridSize( 500, 800, 30, 5, origin );
+            setVoxelGridSize( 500, 800, 30, 5 );
             setDrawingDistance( 20, 50 );
         }
 
@@ -139,23 +143,33 @@ bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, CollisionRepo
 //    cout << __PRETTY_FUNCTION__ << std::endl;
 //    cout << " -- main collision detection function" << endl;
 
-    OpenRAVE::Vector p;
-    double distance_obst;
+    report = CollisionReportPtr( new CollisionReport() );
+    report->contacts.resize( collision_points_.size() );
 
     bool in_collision = false;
+
+    OpenRAVE::Vector p;
+    OpenRAVE::Vector pg;
+    double distance_obst;
+    double potential;
+    bool point_in_collision;
 
     for( size_t i =0; i<collision_points_.size() ; i ++ )
     {
         collision_points_[i].m_is_colliding = false;
         collision_points_[i].getTransformMatrixedPosition( p );
 
-        distance_obst = sdf_.getDistance( sdf_( p.x, p.y, p.z) );
+        point_in_collision = GetCollisionPointPotentialGradient( collision_points_[i] , p, distance_obst, potential, pg );
+        // distance_obst = sdf_.getDistance( sdf_( p.x, p.y, p.z) );
 
-        if( distance_obst < collision_points_[i].getRadius() )
+        if( point_in_collision  )
         {
             collision_points_[i].m_is_colliding = true;
             in_collision = true;
         }
+
+        report->contacts[i].depth = potential;
+        // report->contacts[i].depth = distance_obst;
 
         // cout << " distance_obst : " << distance_obst << endl;
 
@@ -255,4 +269,35 @@ bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, std::vector<s
         return true;
     else
         return false;
+}
+
+bool VoxelCollisionChecker::GetCollisionPointPotentialGradient( distance_field::CollisionPoint& collision_point, const OpenRAVE::Vector& p, double& field_distance, double& potential, OpenRAVE::Vector& pg ) const
+{
+    OpenRAVE::Vector field_gradient;
+
+    // Compute the distance gradient and distance to nearest obstacle
+    field_distance = sdf_.getDistanceGradient( p.x, p.y, p.z, pg.x, pg.y, pg.z );
+
+    double d = field_distance - collision_point.getRadius();
+
+    // three cases below:
+    if (d >= collision_point.getClearance())
+    {
+        potential = 0.0;
+        pg = OpenRAVE::Vector(0,0,0);
+    }
+    else if (d >= 0.0)
+    {
+        double diff = (d - collision_point.getClearance());
+        double gradient_magnitude = diff * collision_point.getInvClearance(); // (diff / clearance)
+        potential = 0.5*gradient_magnitude*diff;
+        pg = gradient_magnitude * field_gradient;
+    }
+    else // if d < 0.0
+    {
+        pg = field_gradient;
+        potential = -d + 0.5 * collision_point.getClearance();
+    }
+
+    return (field_distance <= collision_point.getRadius()); // true if point is in collision
 }

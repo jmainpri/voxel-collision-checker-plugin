@@ -43,7 +43,6 @@
 
 namespace distance_field
 {
-
 /**
  * \brief Generic container for a discretized 3D voxel grid for any class/structure
  */

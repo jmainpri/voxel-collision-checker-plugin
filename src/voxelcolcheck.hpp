@@ -16,13 +16,16 @@
 #define VOXELCOLCHECK_H
 
 #include <iostream>
+
 #include "collision_point.hpp"
+#include "voxel_grid.hpp"
+#include "propagation_distance_field.hpp"
 
 //this collision checker currently fills the numWithinTol variable of the CollisionReport, nothing more
 class VoxelCollisionChecker : public OpenRAVE::CollisionCheckerBase
 {
 public:
-    VoxelCollisionChecker(EnvironmentBasePtr penv,VoxelGrid<int>& vg_in, Transform Tvg_in);
+    VoxelCollisionChecker(EnvironmentBasePtr penv, distance_field::VoxelGrid<int>& vg_in, Transform Tvg_in);
     VoxelCollisionChecker(EnvironmentBasePtr penv);
     ~VoxelCollisionChecker() { graphptrs_.clear(); }
 
@@ -81,9 +84,11 @@ protected:
 
     void CreateCollisionPoints( RobotBasePtr robot );
 
+    bool GetCollisionPointPotentialGradient( distance_field::CollisionPoint& coll_point, const OpenRAVE::Vector& collision_point_pos, double& field_distance, double& potential, OpenRAVE::Vector& gradient) const ;
+
     std::vector< distance_field::CollisionPoint > collision_points_;
 
-    PropagationDistanceField sdf_;
+    distance_field::PropagationDistanceField sdf_;
 
     Transform Tvg_; //transform of the voxel grid center
     

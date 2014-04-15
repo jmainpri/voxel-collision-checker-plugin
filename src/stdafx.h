@@ -226,14 +226,14 @@ class RaveDoubleVectorToRaveFloatVector : public RaveVector<float> {
 #include <newmat/newmat.h>
 #define SETUP_C_SUBSCRIPTS
 
-#include "voxel_grid.hpp"
-#include "libDVXL.h"
-#include "propagation_distance_field.hpp"
-#include "cost_field.hpp"
-#include "init_obstacle_field.hpp"
-#include "voxelcolcheck.hpp"
+//#include "voxel_grid.hpp"
+// #include "libDVXL.h"
+//#include "propagation_distance_field.hpp"
+// #include "cost_field.hpp"
+//#include "init_obstacle_field.hpp"
+// #include "voxelcolcheck.hpp"
 
-#include "dvxlcolcheck.hpp"
+// #include "dvxlcolcheck.hpp"
 
 //stuff for voxel grid planning (these are just temporary until there is a voxel class for link geometries
 //extern std::vector<boost::shared_ptr<ConfigurationCostFunction> > global_vconfigurationcost;
