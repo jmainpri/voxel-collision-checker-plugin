@@ -86,7 +86,7 @@ if __name__ == "__main__":
         print "%s, \t%.3f, \t%.3f" % ( j.GetName() , j.GetLimits()[0] , j.GetLimits()[1] )
 
     robot.SetActiveDOFs( indices )
-    robot.SetDOFValues( [-1,0.5,0.5,-0.6,-1.5,-1,0], indices )
+    robot.SetDOFValues( [-0.2,0.5,0.5,-0.6,-1.5,-1,0], indices )
 
     # Init collision checker
     collisionChecker = RaveCreateCollisionChecker( orEnv,'VoxelColChecker')
@@ -94,9 +94,12 @@ if __name__ == "__main__":
 
     print "checking collision for robot : " + robot.GetName()
     report = CollisionReport()
-    orEnv.CheckCollision( robot, report )
-    print 'mindist: ',report.minDistance
-    print 'contacts: ', report.contacts
+    in_collision = orEnv.CheckCollision( robot, report )
+    print 'in_collision: ', in_collision
+    print 'mindist: ', report.minDistance
+    # print 'contacts: ', report.contacts
+    for c in report.contacts :
+        print "collision point potential : " , str( c.depth )
     
     print "Press return to exit."
     sys.stdin.readline()
