@@ -67,7 +67,7 @@ VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv): OpenRAVE:
         if( robots[0]->GetName() == "Puck" )
         {
             setVoxelGridSize( 500, 800, 30, 5 );
-            setDrawingDistance( 20, 50 );
+            setDrawingDistance( 15, 50 );
         }
 
         if( robots[0]->GetName() == "pr2" )
@@ -147,18 +147,19 @@ void VoxelCollisionChecker::RedrawCollisionPoints()
 // main function for collision checking of robot
 bool VoxelCollisionChecker::CheckCollision( KinBodyConstPtr pbody1, CollisionReportPtr report )
 {
-    cout << __PRETTY_FUNCTION__ << std::endl;
-    cout << " -- main collision detection function" << endl;
+//    cout << __PRETTY_FUNCTION__ << std::endl;
+//    cout << " -- main collision detection function" << endl;
 
-    report->contacts.resize( collision_points_.size() );
+    if( report.get() != NULL ){
+        report->contacts.resize( collision_points_.size() );
+        report->minDistance = std::numeric_limits<dReal>::max();
+    }
 
     bool in_collision( false );
     bool is_point_in_collision( false );
 
     OpenRAVE::Vector p, pg;
     double distance_obst, potential;
-
-    report->minDistance = std::numeric_limits<dReal>::max();
 
     for( size_t i =0; i<collision_points_.size() ; i ++ )
     {
@@ -174,17 +175,20 @@ bool VoxelCollisionChecker::CheckCollision( KinBodyConstPtr pbody1, CollisionRep
             in_collision = true;
         }
 
-        if( distance_obst < report->minDistance )
+        if( report.get() != NULL )
         {
-            report->minDistance = distance_obst;
+            if( distance_obst < report->minDistance )
+            {
+                report->minDistance = distance_obst;
+            }
+            report->contacts[i].depth = potential;
+            report->contacts[i].pos = p;
         }
 
-        report->contacts[i].depth = potential;
-
-        cout << "joint name : " << collision_points_[i].getJointName() ;
-        cout << std::setprecision(2) << " , \t potential : " << potential ;
-        cout << " , \t in collision : " << is_point_in_collision ;
-        cout << endl;
+//        cout << "joint name : " << collision_points_[i].getJointName() ;
+//        cout << std::setprecision(2) << " , \t potential : " << potential ;
+//        cout << " , \t in collision : " << is_point_in_collision ;
+//        cout << endl;
 
         // report->contacts[i].depth = distance_obst;
 
@@ -196,9 +200,9 @@ bool VoxelCollisionChecker::CheckCollision( KinBodyConstPtr pbody1, CollisionRep
         // graphptrs_.push_back( GetEnv()->plot3( &vpoints[0].x, vpoints.size(), sizeof( vpoints[0]), collision_points_[i].getRadius(), vcolors, 1 ) );
     }
 
-    RedrawCollisionPoints();
+    // RedrawCollisionPoints();
 
-    cout << " report->minDistance : " << report->minDistance << endl;
+    // cout << " report->minDistance : " << report->minDistance << endl;
     // cout << " in_collision : " << in_collision << endl;
 
     return in_collision;

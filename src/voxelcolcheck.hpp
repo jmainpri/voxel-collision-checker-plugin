@@ -72,7 +72,7 @@ public:
     virtual bool CheckCollision(const RAY& ray, CollisionReportPtr report = CollisionReportPtr()){std::cout << __PRETTY_FUNCTION__ << std::endl; return false;}
 
     /// checks self collision only with the links of the passed in body
-    virtual bool CheckSelfCollision(KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr()){ std::cout << __PRETTY_FUNCTION__ << std::endl; return false; }
+    virtual bool CheckSelfCollision(KinBodyConstPtr pbody, CollisionReportPtr report = CollisionReportPtr()){ /*std::cout << __PRETTY_FUNCTION__ << std::endl; */ return false; }
     
     //voxel-specific check
     bool CheckCollision(KinBodyConstPtr pbody1, std::vector<std::vector<Vector> >& vvLinkPoints, CollisionReportPtr report = CollisionReportPtr());
