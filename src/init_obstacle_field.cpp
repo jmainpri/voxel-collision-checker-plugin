@@ -91,10 +91,15 @@ void GroundColorMixGreenToRed( std::vector<float>& color, double s )
 static double grid_size_x = 2.0;
 static double grid_size_y = 4.0;
 static double grid_size_z = 0.5;
+
 static double VOXEL_RES = 0.025;
+
 static Transform grid_origin;
+
 static double draw_distance = 0.7;
 static double draw_blue_threshold = 0.7;
+
+static std::vector< boost::shared_ptr<void> > graphptr;
 
 void setDrawingDistance( double dist, double threshold )
 {
@@ -347,7 +352,7 @@ VoxelGrid<int> createVoxelGrid(int compute_new_vg, EnvironmentBasePtr penv, Robo
 }
 
 // PropagationDistanceField -- development code for testing
-PropagationDistanceField createPDFfromVoxelGrid( const VoxelGrid<int>& vg, EnvironmentBasePtr penv, std::vector< boost::shared_ptr<void> >& graphptr )
+PropagationDistanceField createPDFfromVoxelGrid( const VoxelGrid<int>& vg, EnvironmentBasePtr penv )
 {
     // initialize a distance field based on the voxel grid size
     double sizeX = vg.getSize(VoxelGrid<int>::DIM_X);

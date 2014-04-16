@@ -31,7 +31,7 @@ distance_field::VoxelGrid<int> createVoxelGrid( int compute_new_vg, OpenRAVE::En
 
 distance_field::VoxelGrid<int> createEmptyVoxelGrid( OpenRAVE::RobotBasePtr robot );
 
-distance_field::PropagationDistanceField createPDFfromVoxelGrid( const distance_field::VoxelGrid<int>& vg, OpenRAVE::EnvironmentBasePtr penv, std::vector< boost::shared_ptr<void> >& graphptr );
+distance_field::PropagationDistanceField createPDFfromVoxelGrid( const distance_field::VoxelGrid<int>& vg, OpenRAVE::EnvironmentBasePtr penv );
 
 // CostField createCostFieldfromVoxelGrid( const distance_field::VoxelGrid<int>& vg );
 

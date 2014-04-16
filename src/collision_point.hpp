@@ -60,6 +60,11 @@ public:
         return m_parent_joints;
     }
 
+    std::string getJointName() const
+    {
+        return m_joint->GetName();
+    }
+
     void getTransformMatrixedPosition( OpenRAVE::Vector& position ) const;
     void getTransformMatrixedPosition( std::vector<OpenRAVE::TransformMatrix>& segment_frames, OpenRAVE::Vector& position ) const;
     void getTransformMatrixedPosition( std::vector<std::vector<double> >& segment_frames, OpenRAVE::Vector& position ) const;

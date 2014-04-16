@@ -10,6 +10,7 @@ CollisionPoint::CollisionPoint(
         double clearance,
         int segment_number,
         const OpenRAVE::Vector& position) :
+    m_is_colliding(false),
     m_joint(j),
     m_parent_joints(parent_joints),
     m_radius(radius),
@@ -23,6 +24,7 @@ CollisionPoint::CollisionPoint(
 }
 
 CollisionPoint::CollisionPoint(const CollisionPoint &point, const std::vector<int>& parent_joints):
+    m_is_colliding(point.m_is_colliding),
     m_parent_joints(parent_joints),
     m_radius(point.m_radius),
     m_volume((4.0/3.0)*M_PI*m_radius*m_radius*m_radius),

@@ -81,7 +81,7 @@ VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv): OpenRAVE:
 
         // Create sdf
         VoxelGrid<int> vg = createVoxelGrid( COMPUTE_NEW_VG, GetEnv(), robots[0], colbodies );
-        sdf_ = createPDFfromVoxelGrid( vg, GetEnv(), graphptrs_ );
+        sdf_ = createPDFfromVoxelGrid( vg, GetEnv() );
 
         CreateCollisionPoints( robots[0] );
 
@@ -131,6 +131,13 @@ void VoxelCollisionChecker::CreateCollisionPoints( RobotBasePtr robot )
         RAVELOG_INFO("Does not know how to compute collision points for kinbody : %s\n" , robot->GetName().c_str() );
     }
 
+    RedrawCollisionPoints();
+}
+
+void VoxelCollisionChecker::RedrawCollisionPoints()
+{
+    graphptrs_.clear();
+
     for( size_t i =0; i < collision_points_.size() ; i ++ )
     {
         collision_points_[i].draw( graphptrs_, GetEnv() );
@@ -173,6 +180,12 @@ bool VoxelCollisionChecker::CheckCollision( KinBodyConstPtr pbody1, CollisionRep
         }
 
         report->contacts[i].depth = potential;
+
+        cout << "joint name : " << collision_points_[i].getJointName() ;
+        cout << std::setprecision(2) << " , \t potential : " << potential ;
+        cout << " , \t in collision : " << is_point_in_collision ;
+        cout << endl;
+
         // report->contacts[i].depth = distance_obst;
 
         // cout << " distance_obst : " << distance_obst << endl;
@@ -182,6 +195,8 @@ bool VoxelCollisionChecker::CheckCollision( KinBodyConstPtr pbody1, CollisionRep
         // vpoints.push_back( p );
         // graphptrs_.push_back( GetEnv()->plot3( &vpoints[0].x, vpoints.size(), sizeof( vpoints[0]), collision_points_[i].getRadius(), vcolors, 1 ) );
     }
+
+    RedrawCollisionPoints();
 
     cout << " report->minDistance : " << report->minDistance << endl;
     // cout << " in_collision : " << in_collision << endl;
@@ -285,7 +300,7 @@ bool VoxelCollisionChecker::GetCollisionPointPotentialGradient( distance_field::
 
     double d = field_distance - collision_point.getRadius();
 
-    // three cases below:
+    // three cases below
     if (d >= collision_point.getClearance())
     {
         potential = 0.0;
@@ -295,7 +310,7 @@ bool VoxelCollisionChecker::GetCollisionPointPotentialGradient( distance_field::
     {
         double diff = ( d - collision_point.getClearance() );
         double gradient_magnitude = diff * collision_point.getInvClearance(); // (diff / clearance)
-        potential = 0.5*gradient_magnitude*diff;
+        potential = 0.5 * gradient_magnitude * diff;
         pg = gradient_magnitude * field_gradient;
     }
     else // if d < 0.0
