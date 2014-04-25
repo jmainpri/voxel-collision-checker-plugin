@@ -20,4 +20,4 @@ Set up your enviroment:
 Run:
     
     cd examples
-    python simple_example.py
+    python pr2_simple_example.py
