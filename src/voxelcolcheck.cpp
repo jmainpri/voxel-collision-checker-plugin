@@ -30,63 +30,33 @@ VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv, VoxelGrid<
 
     // vg = vg_in;
     Tvg_ = Tvg_in;
-    bDraw_ = true;
-    bInitialized_ = true;
+
+    InitModule();
 }
 
-VoxelCollisionChecker::VoxelCollisionChecker(EnvironmentBasePtr penv): OpenRAVE::CollisionCheckerBase(penv), /*vg(1.0,1.0,1.0,0.5,Transform(),-10)*/
+VoxelCollisionChecker::VoxelCollisionChecker( EnvironmentBasePtr penv ): OpenRAVE::CollisionCheckerBase(penv), /*vg(1.0,1.0,1.0,0.5,Transform(),-10)*/
     sdf_( 1.0,1.0,1.0, 0.5, Transform(), 1.0 )
 {
     cout << __PRETTY_FUNCTION__ << endl;
 
+    InitModule();
+}
+
+bool VoxelCollisionChecker::InitModule()
+{
+
     bDraw_ = true;
+    bInitialized_ = false;
+    dimension_ = OpenRAVE::Vector(1,1,1);
+    offset_ = OpenRAVE::Vector(0,0,0);
+    voxel_size_ = 0.05;
+    collision_points_.clear();
+    robot_centered_ = false;
 
-    cout << __PRETTY_FUNCTION__ << endl;
+    RegisterCommand("setdimension",boost::bind(&VoxelCollisionChecker::SetDimension,this,_2),"returns true if ok");
+    RegisterCommand("initialize",boost::bind(&VoxelCollisionChecker::Initialize,this,_2),"returns true if ok");
 
-    std::vector<RobotBasePtr> robots;
-    GetEnv()->GetRobots( robots );
-
-    if( !robots.empty() )
-    {
-        // List obstacle bodies
-        std::vector<KinBodyPtr> colbodies;
-        GetEnv()->GetBodies( colbodies );
-
-        int robot_id = 0;
-
-        for( size_t i = 0; i < colbodies.size(); i++ )
-        {
-            if( colbodies[i]->GetName() == robots[0]->GetName() )
-            {
-                robot_id = i;
-            }
-        }
-
-        colbodies.erase( colbodies.begin() + robot_id );
-
-        if( robots[0]->GetName() == "Puck" )
-        {
-            setVoxelGridSize( 500, 800, 30, 5 );
-            setDrawingDistance( 15, 50 );
-        }
-
-        if( robots[0]->GetName() == "pr2" )
-        {
-            Transform origin = robots[0]->GetTransform();
-            origin.trans.y -= 1.00;
-            origin.trans.z += 0.50;
-            setVoxelGridSize( 2.0, 2.0, 1.5, 0.025, origin );
-            setDrawingDistance( .10, .30 );
-        }
-
-        // Create sdf
-        VoxelGrid<int> vg = createVoxelGrid( COMPUTE_NEW_VG, GetEnv(), robots[0], colbodies );
-        sdf_ = createPDFfromVoxelGrid( vg, GetEnv() );
-
-        CreateCollisionPoints( robots[0] );
-
-        bInitialized_ = true;
-    }
+    return true;
 }
 
 bool VoxelCollisionChecker::InitEnvironment()
@@ -105,7 +75,7 @@ bool VoxelCollisionChecker::InitEnvironment()
 }
 
 /// notified when a new body has been initialized in the environment
-bool VoxelCollisionChecker::InitKinBody(KinBodyPtr pbody)
+bool VoxelCollisionChecker::InitKinBody( KinBodyPtr pbody )
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
     UserDataPtr pdata( new UserData() );
@@ -113,42 +83,17 @@ bool VoxelCollisionChecker::InitKinBody(KinBodyPtr pbody)
     return true;
 }
 
-void VoxelCollisionChecker::CreateCollisionPoints( RobotBasePtr robot )
-{
-    collision_points_.clear();
-
-    if( robot->GetName() == "pr2" )
-    {
-            cout << "Compute collision points for " << robot->GetName() << endl;
-            collision_points_ = createCollionPointsForPr2( robot );
-    }
-    else if( robot->GetName() == "Puck" )
-    {
-            cout << "Compute collision points for " << robot->GetName() << endl;
-            collision_points_ = createCollionPointsForPuck( robot );
-    }
-    else {
-        RAVELOG_INFO("Does not know how to compute collision points for kinbody : %s\n" , robot->GetName().c_str() );
-    }
-
-    RedrawCollisionPoints();
-}
-
-void VoxelCollisionChecker::RedrawCollisionPoints()
-{
-    graphptrs_.clear();
-
-    for( size_t i =0; i < collision_points_.size() ; i ++ )
-    {
-        collision_points_[i].draw( graphptrs_, GetEnv() );
-    }
-}
-
 // main function for collision checking of robot
 bool VoxelCollisionChecker::CheckCollision( KinBodyConstPtr pbody1, CollisionReportPtr report )
 {
 //    cout << __PRETTY_FUNCTION__ << std::endl;
 //    cout << " -- main collision detection function" << endl;
+
+    if(!bInitialized_)
+    {
+        RAVELOG_INFO("VoxelCollisionChecker ERROR: VoxelCollisionChecker is not initialized!\n");
+        return false;
+    }
 
     if( report.get() != NULL ){
         report->contacts.resize( collision_points_.size() );
@@ -194,10 +139,13 @@ bool VoxelCollisionChecker::CheckCollision( KinBodyConstPtr pbody1, CollisionRep
 
         // cout << " distance_obst : " << distance_obst << endl;
 
-        // OpenRAVE::RaveVector<float> vcolors(1.0, collision_points_[i].m_is_colliding ? 0.0 : 1.0 ,0.0,0.1);
-        // std::vector<OpenRAVE::RaveVector<float> > vpoints;
-        // vpoints.push_back( p );
-        // graphptrs_.push_back( GetEnv()->plot3( &vpoints[0].x, vpoints.size(), sizeof( vpoints[0]), collision_points_[i].getRadius(), vcolors, 1 ) );
+//        if( bDraw_ )
+//        {
+//            OpenRAVE::RaveVector<float> vcolors(1.0, collision_points_[i].m_is_colliding ? 0.0 : 1.0 ,0.0,0.1);
+//            std::vector<OpenRAVE::RaveVector<float> > vpoints;
+//            vpoints.push_back( p );
+//            graphptrs_.push_back( GetEnv()->plot3( &vpoints[0].x, vpoints.size(), sizeof( vpoints[0]), collision_points_[i].getRadius(), vcolors, 1 ) );
+//        }
     }
 
     // RedrawCollisionPoints();
@@ -295,8 +243,23 @@ bool VoxelCollisionChecker::CheckCollision(KinBodyConstPtr pbody1, std::vector<s
         return false;
 }
 
+// -------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------
+
+bool VoxelCollisionChecker::SendCommand( std::ostream& sout, std::istream& sinput )
+{
+    OpenRAVE::CollisionCheckerBase::SendCommand( sout, sinput );
+    return true;
+}
+
 bool VoxelCollisionChecker::GetCollisionPointPotentialGradient( distance_field::CollisionPoint& collision_point, const OpenRAVE::Vector& p, double& field_distance, double& potential, OpenRAVE::Vector& pg ) const
 {
+    if( !bInitialized_ ) {
+        RAVELOG_INFO("VoxelCollisionChecker ERROR: VoxelCollisionChecker is not initialized!\n");
+        return false;
+    }
+
     OpenRAVE::Vector field_gradient;
 
     // Compute the distance gradient and distance to nearest obstacle
@@ -324,4 +287,141 @@ bool VoxelCollisionChecker::GetCollisionPointPotentialGradient( distance_field::
     }
 
     return (field_distance <= collision_point.getRadius()); // true if point is in collision
+}
+
+void VoxelCollisionChecker::CreateCollisionPoints( RobotBasePtr robot )
+{
+    collision_points_.clear();
+
+    if( robot->GetName() == "Puck" )
+    {
+        cout << "Compute collision points for " << robot->GetName() << endl;
+        collision_points_ = createCollionPointsForPuck( robot );
+        setDrawingDistance( 15, 50 );
+    }
+    else if( robot->GetName() == "pr2" )
+    {
+        cout << "Compute collision points for " << robot->GetName() << endl;
+        collision_points_ = createCollionPointsForPr2( robot );
+        setDrawingDistance( .15, .40 );
+    }
+    else {
+        RAVELOG_INFO("Does not know how to compute collision points for kinbody : %s\n" , robot->GetName().c_str() );
+    }
+
+    drawClearHandles();
+    drawPDF( sdf_, GetEnv() );
+
+    RedrawCollisionPoints();
+}
+
+void VoxelCollisionChecker::RedrawCollisionPoints()
+{
+    graphptrs_.clear();
+
+    for( size_t i =0; i < collision_points_.size() ; i ++ )
+    {
+        collision_points_[i].draw( graphptrs_, GetEnv() );
+    }
+}
+
+bool VoxelCollisionChecker::SetDimension( std::istream& sinput )
+{
+    std::string cmd;
+    while(!sinput.eof())
+    {
+        sinput >> cmd;
+        if( !sinput )
+            break;
+
+        if( cmd == "voxelsize" )
+        {
+            sinput >> voxel_size_;
+        }
+        else if( cmd == "extent" )
+        {
+            for(size_t i = 0; i < 3; i++)
+                sinput >> dimension_[i];
+        }
+        else if( cmd == "offset" )
+        {
+            cout << cmd << endl;
+            for(size_t i = 0; i < 3; i++)
+                sinput >> offset_[i];
+            cout << offset_ << endl;
+        }
+        else if( cmd == "robotcentered" )
+        {
+            robot_centered_ = true;
+        }
+        else break;
+        if( !sinput ) {
+            RAVELOG_DEBUG("failed\n");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool VoxelCollisionChecker::Initialize( std::istream& sinput )
+{
+    std::vector<RobotBasePtr> robots;
+    GetEnv()->GetRobots( robots );
+
+    if( !robots.empty() )
+    {
+        // Get list of obstacles bodies
+        colbodies_.clear();
+        GetEnv()->GetBodies( colbodies_ );
+
+        int robot_id = 0;
+        for( size_t i=0; i<colbodies_.size(); i++ )
+        {
+            if( colbodies_[i]->GetName() == robots[0]->GetName() )
+                robot_id = i;
+        }
+
+        // Remove robot from collision body list
+        colbodies_.erase( colbodies_.begin() + robot_id );
+
+        // Get robot transform and apply offset
+
+        OpenRAVE::Transform origin;
+
+        if( robot_centered_ )
+            origin = robots[0]->GetTransform();
+
+        origin.trans += offset_;
+
+        // Set voxel grid dimension and origin
+        setVoxelGridSize( dimension_.x, dimension_.y, dimension_.z, voxel_size_, origin );
+
+//        if( robots[0]->GetName() == "Puck" )
+//        {
+//            setVoxelGridSize( 500, 800, 30, 5 );
+//            setDrawingDistance( 15, 50 );
+//        }
+
+//        if( robots[0]->GetName() == "pr2" )
+//        {
+//            Transform origin = robots[0]->GetTransform();
+//            origin.trans.y -= 1.00;
+//            origin.trans.z += 0.50;
+//            setVoxelGridSize( 2.0, 2.0, 1.5, 0.025, origin );
+//            setDrawingDistance( .03, .30 );
+//        }
+
+        // Create Signed Distance Feild
+        VoxelGrid<int> vg = createVoxelGrid( COMPUTE_NEW_VG, GetEnv(), robots[0], colbodies_ );
+        sdf_ = createPDFfromVoxelGrid( vg, GetEnv() );
+
+        // Create collision points
+        CreateCollisionPoints( robots[0] );
+
+        bInitialized_ = true;
+        return true;
+    }
+
+    return false;
 }

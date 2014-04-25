@@ -78,14 +78,19 @@ public:
     bool CheckCollision(KinBodyConstPtr pbody1, std::vector<std::vector<Vector> >& vvLinkPoints, CollisionReportPtr report = CollisionReportPtr());
     bool CheckCollision(KinBodyConstPtr pbody1, std::vector<std::vector<Vector> >& vvLinkPoints, std::vector<std::vector<bool> >& vvPointsColliding, CollisionReportPtr report = CollisionReportPtr());
 
+    // Send commands to the collision checker
+    virtual bool SendCommand( std::ostream& sout, std::istream& sinput );
+
     bool bInitialized_;
+
 
 protected:
 
+    bool InitModule();
+    bool SetDimension( std::istream& sinput );
+    bool Initialize( std::istream& sinput );
     void RedrawCollisionPoints();
-
     void CreateCollisionPoints( RobotBasePtr robot );
-
     bool GetCollisionPointPotentialGradient( distance_field::CollisionPoint& coll_point, const OpenRAVE::Vector& collision_point_pos, double& field_distance, double& potential, OpenRAVE::Vector& gradient) const ;
 
     std::vector< distance_field::CollisionPoint > collision_points_;
@@ -98,6 +103,12 @@ protected:
     std::vector<  boost::shared_ptr<void>  > graphptrs_;
     std::vector<RaveVector<float> > vplotpoints_;
     std::vector<float> vplotcolors_;
+
+    std::vector<OpenRAVE::KinBodyPtr> colbodies_;
+    OpenRAVE::Vector dimension_;
+    OpenRAVE::Vector offset_;
+    float voxel_size_;
+    bool robot_centered_;
 };
 
 #endif

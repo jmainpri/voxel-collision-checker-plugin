@@ -90,6 +90,9 @@ if __name__ == "__main__":
 
     # Init collision checker
     collisionChecker = RaveCreateCollisionChecker( orEnv,'VoxelColChecker')
+    collisionChecker.SendCommand('SetDimension robotcentered extent 1.5 2.0 1.5 offset 0 -1 0.5')
+    collisionChecker.SendCommand('Initialize')
+
     orEnv.SetCollisionChecker( collisionChecker )
 
     print "checking collision for robot : " + robot.GetName()

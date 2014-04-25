@@ -101,6 +101,11 @@ static double draw_blue_threshold = 0.7;
 
 static std::vector< boost::shared_ptr<void> > graphptr;
 
+void drawClearHandles()
+{
+    graphptr.clear();
+}
+
 void setDrawingDistance( double dist, double threshold )
 {
     draw_distance = dist;
@@ -351,6 +356,71 @@ VoxelGrid<int> createVoxelGrid(int compute_new_vg, EnvironmentBasePtr penv, Robo
     return(vg);
 }
 
+void drawPDF( const PropagationDistanceField& PDF, EnvironmentBasePtr penv )
+{
+    double res = PDF.getResolution(VoxelGrid<distance_field::PropDistanceFieldVoxel>::DIM_X); // uniform resolution for X,Y,Z
+
+    cout << "resolution : " << res << endl;
+
+    int numX = PDF.getNumCells(VoxelGrid<distance_field::PropDistanceFieldVoxel>::DIM_X);
+    int numY = PDF.getNumCells(VoxelGrid<distance_field::PropDistanceFieldVoxel>::DIM_Y);
+    int numZ = PDF.getNumCells(VoxelGrid<distance_field::PropDistanceFieldVoxel>::DIM_Z);
+
+    double posn[3];
+    std::vector<float> vcolors(3);
+    bool inverse = true;
+
+    std::vector<float> x_slices(2);
+    x_slices[0] = 20;
+    x_slices[1] = 60;
+
+    // for (int i=0; i<int(x_slices.size()); i++){
+    //int x = x_slices[i];
+    for (int x=0; x<numX; x++){
+        for (int y=0; y<numY; y++)
+            for (int z=0; z<numZ; z++)
+            {
+                // int z = 5; // Draw one slice
+
+                // #if 1 // show all voxels
+                int isBound = 0;
+
+                if (x==0 || x==numX-1) isBound++;
+                if (y==0 || y==numY-1) isBound++;
+                if (z==0 || z==numZ-1) isBound++;
+
+                double distance_obst = PDF.getDistance( PDF.getCell(x,y,z) );
+
+                if( distance_obst < draw_distance  || isBound > 2 ) // voxel if collision or an edge of grid
+                {
+                    PDF.gridToWorld( x, y, z, posn[0], posn[1], posn[2] );
+
+                    double alpha = distance_obst / draw_blue_threshold; // / 10 ;
+
+                    if ( alpha < 0.0 )
+                    { alpha = 0.0; }
+
+                    if ( alpha > 1.0 )
+                    { alpha = 1.0; }
+
+                    if ( inverse )
+                    { alpha = 1 - alpha; }
+
+                    GroundColorMixGreenToRed( vcolors, alpha );
+
+                    std::vector<OpenRAVE::RaveVector<float> > vpoints;
+                    OpenRAVE::RaveVector<float> pnt( posn[0], posn[1], posn[2] );
+                    vpoints.push_back( pnt );
+
+                    graphptr.push_back( penv->plot3( &vpoints[0].x, vpoints.size(), sizeof( vpoints[0]), res/2, &vcolors[0], 1 ) );
+                }
+                //#endif
+                // cout << "cell : " << x << " " << y << " " << z << endl;
+            }
+        // cout << "cell : " << x << endl;
+    }
+}
+
 // PropagationDistanceField -- development code for testing
 PropagationDistanceField createPDFfromVoxelGrid( const VoxelGrid<int>& vg, EnvironmentBasePtr penv )
 {
@@ -418,64 +488,6 @@ PropagationDistanceField createPDFfromVoxelGrid( const VoxelGrid<int>& vg, Envir
 //        }
 //        cout << "\n";
 //    }
-
-//#if 0
-    cout << "resolution : " << res << endl;
-
-    double posn[3];
-    std::vector<float> vcolors(3);
-    bool inverse = true;
-
-    std::vector<float> x_slices(2);
-    x_slices[0] = 20;
-    x_slices[1] = 60;
-
-    // for (int i=0; i<int(x_slices.size()); i++){
-    //int x = x_slices[i];
-    for (int x=0; x<numX; x++){
-        for (int y=0; y<numY; y++)
-            for (int z=0; z<numZ; z++)
-            {
-            // int z = 5; // Draw one slice
-
-                // #if 1 // show all voxels
-                int isBound = 0;
-
-                if (x==0 || x==numX-1) isBound++;
-                if (y==0 || y==numY-1) isBound++;
-                if (z==0 || z==numZ-1) isBound++;
-
-                double distance_obst = PDF.getDistance( PDF.getCell(x,y,z) );
-
-                if( distance_obst < draw_distance  || isBound > 2 ) // voxel if collision or an edge of grid
-                {
-                    PDF.gridToWorld( x, y, z, posn[0], posn[1], posn[2] );
-
-                    double alpha = distance_obst / draw_blue_threshold; // / 10 ;
-
-                    if ( alpha < 0.0 )
-                    { alpha = 0.0; }
-
-                    if ( alpha > 1.0 )
-                    { alpha = 1.0; }
-
-                    if ( inverse )
-                    { alpha = 1 - alpha; }
-
-                    GroundColorMixGreenToRed( vcolors, alpha );
-
-                    std::vector<OpenRAVE::RaveVector<float> > vpoints;
-                    OpenRAVE::RaveVector<float> pnt( posn[0], posn[1], posn[2] );
-                    vpoints.push_back( pnt );
-
-                    graphptr.push_back( penv->plot3( &vpoints[0].x, vpoints.size(), sizeof( vpoints[0]), res/2, &vcolors[0], 1 ) );
-                }
-                //#endif
-                // cout << "cell : " << x << " " << y << " " << z << endl;
-            }
-        // cout << "cell : " << x << endl;
-    }
-//#endif
 
     return(PDF);
 }

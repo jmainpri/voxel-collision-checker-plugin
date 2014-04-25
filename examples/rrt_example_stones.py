@@ -22,6 +22,8 @@ class TwoDPlanner():
         self.orEnv.Load( '../models/stones.env.xml' )
 
         self.collisionChecker = RaveCreateCollisionChecker( self.orEnv,'VoxelColChecker')
+        self.collisionChecker.SendCommand('SetDimension extent 500 800 30 voxelsize 5')
+        self.collisionChecker.SendCommand('Initialize')
         self.orEnv.SetCollisionChecker( self.collisionChecker ) 
 
         self.drawingHandles = []

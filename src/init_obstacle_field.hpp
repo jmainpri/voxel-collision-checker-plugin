@@ -24,17 +24,20 @@
 
 double obstacleCost( double distance);
 
+// Drawing
+void drawClearHandles();
 void setDrawingDistance( double dist, double blue_threshold = 0.3 );
 void setVoxelGridSize(double x, double y, double z, double res, Transform grid_origin = Transform() );
 
+// Voxel Grid
 distance_field::VoxelGrid<int> createVoxelGrid( int compute_new_vg, OpenRAVE::EnvironmentBasePtr penv, OpenRAVE::RobotBasePtr robot, std::vector<OpenRAVE::KinBodyPtr>& colbodies );
-
 distance_field::VoxelGrid<int> createEmptyVoxelGrid( OpenRAVE::RobotBasePtr robot );
 
+// Propagation distance field
 distance_field::PropagationDistanceField createPDFfromVoxelGrid( const distance_field::VoxelGrid<int>& vg, OpenRAVE::EnvironmentBasePtr penv );
+void drawPDF( const distance_field::PropagationDistanceField& PDF, OpenRAVE::EnvironmentBasePtr penv );
 
-// CostField createCostFieldfromVoxelGrid( const distance_field::VoxelGrid<int>& vg );
-
+// Collision points
 std::vector<distance_field::CollisionPoint> createCollionPointsForPr2( OpenRAVE::RobotBasePtr body );
 std::vector<distance_field::CollisionPoint> createCollionPointsForPuck( OpenRAVE::RobotBasePtr body );
 
