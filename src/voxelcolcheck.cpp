@@ -46,7 +46,7 @@ bool VoxelCollisionChecker::InitModule()
 {
 
     bDraw_ = true;
-    draw_distance_ = 0.20;
+    draw_distance_ = 0.15;
     draw_color_threshold_ = 0.40;
     bInitialized_ = false;
     dimension_ = OpenRAVE::Vector(1,1,1);

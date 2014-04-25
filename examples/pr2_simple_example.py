@@ -69,7 +69,7 @@ if __name__ == "__main__":
     robot = orEnv.GetRobots()[0]    
 
     T = eye(4)
-    T[0,3] = -1.0
+    T[0,3] = 0.0
     T[1,3] = 0.0
     T[2,3] = 0.0
 
