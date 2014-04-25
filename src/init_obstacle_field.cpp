@@ -672,7 +672,7 @@ std::vector<CollisionPoint> getLinksCollisionPoints( OpenRAVE::KinBody::JointPtr
 //! iterates through the active joints
 //! the radius for all the collision points is given as input
 //! TODO compute the radii from the KinBody size
-std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::RobotBasePtr robot, const std::vector<float>& radii, bool use_second_joint )
+std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::EnvironmentBasePtr penv, OpenRAVE::RobotBasePtr robot, const std::vector<float>& radii, bool use_second_joint )
 {
     std::vector<CollisionPoint> collision_points;
 
@@ -689,19 +689,30 @@ std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::RobotBasePtr 
         }
     }
 
+    std::vector< OpenRAVE::RaveVector<float> > vpoints;
+    std::vector<float> vcolors(3,0);
+
     for( size_t i=0; i<joints.size()-1; i++ )
     {
         OpenRAVE::KinBody::JointPtr j1 = joints[i];
         OpenRAVE::KinBody::JointPtr j2 = joints[i+1];
 
-        cout << "j1.GetName() : " << j1->GetName() << endl;
-        cout << "j2.GetName() : " << j2->GetName() << endl;
+//        cout << "j1.GetName() : " << j1->GetName() << endl;
+//        cout << "j2.GetName() : " << j2->GetName() << endl;
 
-        Vector p1 = j1->GetHierarchyParentLink()->GetTransform().inverse() * j1->GetAnchor();
-        Vector p2 = j2->GetHierarchyParentLink()->GetTransform().inverse() * j2->GetAnchor();
+        Vector p1 = j1->GetHierarchyChildLink()->GetTransform().inverse() * ( use_second_joint ? j2 : j1 )->GetAnchor();
+        Vector p2 = j1->GetHierarchyChildLink()->GetTransform().inverse() * j2->GetAnchor();
+
+//        cout << "p1 : " << p1 << endl;
+//        cout << "p2 : " << p1 << endl;
+
+        vpoints.push_back( j1->GetAnchor() );
+        vpoints.push_back( j2->GetAnchor() );
 
         // Make sure the array of radii is big enough
         double radius( i >= radii.size() ? radii.back() : radii[i] );
+
+        cout << "radius[ " << i << " ] : " << radius << endl;
 
         // Get the firs or second joint (2nd in the case of the Puck Robot)
         OpenRAVE::KinBody::JointPtr joint_attached( use_second_joint ? j2 : j1 );
@@ -711,6 +722,8 @@ std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::RobotBasePtr 
         std::vector<CollisionPoint> new_points = getLinksCollisionPoints( joint_attached, p1, p2, i, parent_joints, radius );
         collision_points.insert( collision_points.end(), new_points.begin(), new_points.end() );
     }
+
+    // graphptr.push_back( penv->plot3( &vpoints[0].x, vpoints.size(), sizeof( vpoints[0]), .10, &vcolors[0], 1 ) );
 
     return collision_points;
 }

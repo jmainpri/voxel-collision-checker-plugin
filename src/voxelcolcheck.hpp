@@ -89,6 +89,7 @@ protected:
     bool InitModule();
     bool SetDimension( std::istream& sinput );
     bool Initialize( std::istream& sinput );
+    bool SetCollisionPointsRadii( std::istream& sinput );
     void RedrawCollisionPoints();
     void CreateCollisionPoints( RobotBasePtr robot );
     bool GetCollisionPointPotentialGradient( distance_field::CollisionPoint& coll_point, const OpenRAVE::Vector& collision_point_pos, double& field_distance, double& potential, OpenRAVE::Vector& gradient) ;
@@ -110,6 +111,8 @@ protected:
     float voxel_size_;
     bool robot_centered_;
     std::vector<float> radii_;
+    double draw_distance_;
+    double draw_color_threshold_;
 };
 
 #endif

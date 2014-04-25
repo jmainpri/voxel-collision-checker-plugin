@@ -46,6 +46,8 @@ bool VoxelCollisionChecker::InitModule()
 {
 
     bDraw_ = true;
+    draw_distance_ = 0.20;
+    draw_color_threshold_ = 0.40;
     bInitialized_ = false;
     dimension_ = OpenRAVE::Vector(1,1,1);
     offset_ = OpenRAVE::Vector(0,0,0);
@@ -57,6 +59,7 @@ bool VoxelCollisionChecker::InitModule()
 
     RegisterCommand("setdimension",boost::bind(&VoxelCollisionChecker::SetDimension,this,_2),"returns true if ok");
     RegisterCommand("initialize",boost::bind(&VoxelCollisionChecker::Initialize,this,_2),"returns true if ok");
+    RegisterCommand("setcollisionpointsradii",boost::bind(&VoxelCollisionChecker::SetCollisionPointsRadii,this,_2),"returns true if ok");
 
     return true;
 }
@@ -296,27 +299,24 @@ void VoxelCollisionChecker::CreateCollisionPoints( RobotBasePtr robot )
 {
     collision_points_.clear();
 
+    drawClearHandles();
+
     if( robot->GetName() == "Puck" )
     {
         cout << "Compute collision points for " << robot->GetName() << endl;
         radii_.clear();
         radii_.push_back( 20.0 );
-        collision_points_ = createCollionPointsForRobot( robot, radii_, true );
+        collision_points_ = createCollionPointsForRobot( GetEnv(), robot, radii_, true );
         setDrawingDistance( 15, 40 );
     }
-    else if( robot->GetName() == "pr2" )
+    else
     {
         cout << "Compute collision points for " << robot->GetName() << endl;
-        collision_points_ = createCollionPointsForRobot( robot, radii_ );
-        setDrawingDistance( .15, .40 );
-    }
-    else {
-        RAVELOG_INFO("Does not know how to compute collision points for kinbody : %s\n" , robot->GetName().c_str() );
+        collision_points_ = createCollionPointsForRobot( GetEnv(), robot, radii_ );
+        setDrawingDistance( draw_distance_, draw_color_threshold_ );
     }
 
     cout << "collision_points_.size() : " << collision_points_.size() << endl;
-
-    drawClearHandles();
 
     if( bDraw_ )
     {
@@ -333,6 +333,42 @@ void VoxelCollisionChecker::RedrawCollisionPoints()
     {
         collision_points_[i].draw( graphptrs_, GetEnv() );
     }
+}
+
+bool VoxelCollisionChecker::SetCollisionPointsRadii( std::istream& sinput )
+{
+    radii_.clear();
+
+    std::string cmd;
+    while(!sinput.eof())
+    {
+        sinput >> cmd;
+        if( !sinput )
+            break;
+
+        if( cmd == "radii" )
+        {
+            cout << cmd << endl;
+            // note that this appends to goals, does not overwrite them
+            size_t temp;
+            sinput >> temp;
+            radii_.resize( temp );
+            for( size_t i=0; i<temp; i++ ) {
+                sinput >> radii_[i];
+            }
+        }
+        else break;
+        if( !sinput ) {
+            RAVELOG_DEBUG("failed\n");
+            return false;
+        }
+    }
+
+    std::vector<RobotBasePtr> robots;
+    GetEnv()->GetRobots( robots );
+    CreateCollisionPoints( robots[0] );
+
+    return true;
 }
 
 bool VoxelCollisionChecker::SetDimension( std::istream& sinput )

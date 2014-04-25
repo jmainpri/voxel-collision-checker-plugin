@@ -57,11 +57,6 @@ if __name__ == "__main__":
 
     orEnv.GetViewer().SetCamera( T_cam )
 
-    T = eye(4)
-    T[0,3] = 0.0
-    T[1,3] = 0.0
-    T[2,3] = 0.0
-
     for b in orEnv.GetBodies() :
         print "name : ", b.GetName()
         if  b.GetName() == "Shelf":
@@ -71,13 +66,19 @@ if __name__ == "__main__":
     shelf.SetTransform( array( MakeTransform( rodrigues([-pi/2,0,0]), matrix([0.7,-0.5,0]) ) ) )
 
     # Get robot
-    robot = orEnv.GetRobots()[0]
+    robot = orEnv.GetRobots()[0]    
+
+    T = eye(4)
+    T[0,3] = -1.0
+    T[1,3] = 0.0
+    T[2,3] = 0.0
+
     robot.SetTransform( T )
 
     # Set active manipulator
     robot.SetActiveManipulator(1)
     # indices = robot.GetActiveManipulator().GetArmIndices()
-    indices = [27, 28, 29, 30, 31, 32, 33]
+    indices = [27, 28, 29, 30, 31, 32, 33, 34, 35]
 
     # Print the limits
     for jIdx, j in enumerate(robot.GetJoints()):
@@ -86,11 +87,12 @@ if __name__ == "__main__":
         print "%s, \t%.3f, \t%.3f" % ( j.GetName() , j.GetLimits()[0] , j.GetLimits()[1] )
 
     robot.SetActiveDOFs( indices )
-    robot.SetDOFValues( [-0.2,0.5,0.5,-0.6,-1.5,-1,0], indices )
+    robot.SetDOFValues( [-0.2,0.5,0.5,-0.6,-1.5,-1,0,0,0], indices )
 
     # Init collision checker
     collisionChecker = RaveCreateCollisionChecker( orEnv,'VoxelColChecker')
     collisionChecker.SendCommand('SetDimension robotcentered extent 1.5 2.0 1.5 offset 0 -1 0.5')
+    collisionChecker.SendCommand('SetCollisionPointsRadii radii 6 0.22 0.15 0.14 0.1 0.1 0.1 0.1 0.1')
     collisionChecker.SendCommand('Initialize')
 
     orEnv.SetCollisionChecker( collisionChecker )
