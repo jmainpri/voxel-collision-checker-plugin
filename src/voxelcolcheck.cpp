@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+/** \author Dmitry Berenson and Jim Mainprice */
+
 #include "stdafx.h"
 
 #include "voxelcolcheck.hpp"
@@ -88,7 +90,47 @@ bool VoxelCollisionChecker::InitKinBody( KinBodyPtr pbody )
     return true;
 }
 
-// main function for collision checking of robot
+bool VoxelCollisionChecker::GetCollisionPointPotentialGradient( distance_field::CollisionPoint& collision_point, const OpenRAVE::Vector& p, double& field_distance, double& potential, OpenRAVE::Vector& pg )
+{
+    if( !bInitialized_ ) {
+        RAVELOG_INFO("VoxelCollisionChecker ERROR: VoxelCollisionChecker is not initialized!\n");
+        return false;
+    }
+
+    // Function by Mrinal Kalakrishnan
+
+    OpenRAVE::Vector field_gradient;
+
+    // Compute the distance gradient and distance to nearest obstacle
+    field_distance = sdf_.getDistanceGradient( p.x, p.y, p.z, pg.x, pg.y, pg.z );
+
+    double d = field_distance - collision_point.getRadius();
+
+    // three cases below
+    if (d >= collision_point.getClearance())
+    {
+        potential = 0.0;
+        pg = OpenRAVE::Vector(0,0,0);
+    }
+    else if (d >= 0.0)
+    {
+        double diff = ( d - collision_point.getClearance() );
+        double gradient_magnitude = diff * collision_point.getInvClearance(); // (diff / clearance)
+        potential = 0.5 * gradient_magnitude * diff;
+        pg = gradient_magnitude * field_gradient;
+    }
+    else // if d < 0.0
+    {
+        pg = field_gradient;
+        potential = -d + 0.5 * collision_point.getClearance();
+    }
+
+    return (field_distance <= collision_point.getRadius()); // true if point is in collision
+}
+
+// **********************************************
+// MAIN function for robot collision checking
+// **********************************************
 bool VoxelCollisionChecker::CheckCollision( KinBodyConstPtr pbody1, CollisionReportPtr report )
 {
 //    cout << __PRETTY_FUNCTION__ << std::endl;
@@ -100,64 +142,45 @@ bool VoxelCollisionChecker::CheckCollision( KinBodyConstPtr pbody1, CollisionRep
         return false;
     }
 
-    if( report.get() != NULL ){
+    bool do_report = ( report.get() != NULL );
+    bool in_collision( false );
+    bool is_point_in_collision( false );
+    OpenRAVE::Vector p, pg;
+    double distance_obst, potential;
+
+    if( do_report ){
         report->contacts.resize( collision_points_.size() );
         report->minDistance = std::numeric_limits<dReal>::max();
     }
-
-    bool in_collision( false );
-    bool is_point_in_collision( false );
-
-    OpenRAVE::Vector p, pg;
-    double distance_obst, potential;
 
     for( size_t i =0; i<collision_points_.size() ; i ++ )
     {
         collision_points_[i].m_is_colliding = false;
         collision_points_[i].getTransformMatrixedPosition( p );
 
-        is_point_in_collision = GetCollisionPointPotentialGradient( collision_points_[i], p, distance_obst, potential, pg );
-        // distance_obst = sdf_.getDistance( sdf_( p.x, p.y, p.z) );
+        if( do_report ) // Complete report case (compute potential)
+        {
+            is_point_in_collision = GetCollisionPointPotentialGradient( collision_points_[i], p, distance_obst, potential, pg );
+
+            double distance = ( distance_obst - collision_points_[i].getRadius() );
+            if( distance < report->minDistance )
+                report->minDistance = distance;
+
+            report->contacts[i].depth = potential; // depth should be "distance" (highjack for optimizers)
+            report->contacts[i].pos = p;
+        }
+        else // Simple case check distance
+        {
+            distance_obst = sdf_.getDistance( sdf_( p.x, p.y, p.z) );
+            is_point_in_collision = ( distance_obst <= collision_points_[i].getRadius() );
+        }
 
         if( is_point_in_collision  )
         {
             collision_points_[i].m_is_colliding = true;
             in_collision = true;
         }
-
-        if( report.get() != NULL )
-        {
-            double distance = ( distance_obst - collision_points_[i].getRadius() );
-            if( distance < report->minDistance )
-            {
-                report->minDistance = distance;
-            }
-            report->contacts[i].depth = potential;
-            report->contacts[i].pos = p;
-        }
-
-//        cout << "joint name : " << collision_points_[i].getJointName() ;
-//        cout << std::setprecision(2) << " , \t potential : " << potential ;
-//        cout << " , \t in collision : " << is_point_in_collision ;
-//        cout << endl;
-
-        // report->contacts[i].depth = distance_obst;
-
-        // cout << " distance_obst : " << distance_obst << endl;
-
-//        if( bDraw_ )
-//        {
-//            OpenRAVE::RaveVector<float> vcolors(1.0, collision_points_[i].m_is_colliding ? 0.0 : 1.0 ,0.0,0.1);
-//            std::vector<OpenRAVE::RaveVector<float> > vpoints;
-//            vpoints.push_back( p );
-//            graphptrs_.push_back( GetEnv()->plot3( &vpoints[0].x, vpoints.size(), sizeof( vpoints[0]), collision_points_[i].getRadius(), vcolors, 1 ) );
-//        }
     }
-
-    // RedrawCollisionPoints();
-
-    // cout << " report->minDistance : " << report->minDistance << endl;
-    // cout << " in_collision : " << in_collision << endl;
 
     return in_collision;
 }
@@ -259,49 +282,13 @@ bool VoxelCollisionChecker::SendCommand( std::ostream& sout, std::istream& sinpu
     return true;
 }
 
-bool VoxelCollisionChecker::GetCollisionPointPotentialGradient( distance_field::CollisionPoint& collision_point, const OpenRAVE::Vector& p, double& field_distance, double& potential, OpenRAVE::Vector& pg )
-{
-    if( !bInitialized_ ) {
-        RAVELOG_INFO("VoxelCollisionChecker ERROR: VoxelCollisionChecker is not initialized!\n");
-        return false;
-    }
-
-    OpenRAVE::Vector field_gradient;
-
-    // Compute the distance gradient and distance to nearest obstacle
-    field_distance = sdf_.getDistanceGradient( p.x, p.y, p.z, pg.x, pg.y, pg.z );
-
-    double d = field_distance - collision_point.getRadius();
-
-    // three cases below
-    if (d >= collision_point.getClearance())
-    {
-        potential = 0.0;
-        pg = OpenRAVE::Vector(0,0,0);
-    }
-    else if (d >= 0.0)
-    {
-        double diff = ( d - collision_point.getClearance() );
-        double gradient_magnitude = diff * collision_point.getInvClearance(); // (diff / clearance)
-        potential = 0.5 * gradient_magnitude * diff;
-        pg = gradient_magnitude * field_gradient;
-    }
-    else // if d < 0.0
-    {
-        pg = field_gradient;
-        potential = -d + 0.5 * collision_point.getClearance();
-    }
-
-    return (field_distance <= collision_point.getRadius()); // true if point is in collision
-}
-
 void VoxelCollisionChecker::CreateCollisionPoints( RobotBasePtr robot )
 {
     collision_points_.clear();
 
     drawClearHandles();
 
-    if( robot->GetName() == "Puck" )
+    if( robot->GetName() == "Puck" ) // Special case for the puck robot
     {
         cout << "Compute collision points for " << robot->GetName() << endl;
         radii_.clear();
@@ -309,7 +296,7 @@ void VoxelCollisionChecker::CreateCollisionPoints( RobotBasePtr robot )
         collision_points_ = createCollionPointsForRobot( GetEnv(), robot, radii_, true );
         setDrawingDistance( 15, 40 );
     }
-    else
+    else // General case
     {
         cout << "Compute collision points for " << robot->GetName() << endl;
         collision_points_ = createCollionPointsForRobot( GetEnv(), robot, radii_ );
@@ -330,9 +317,7 @@ void VoxelCollisionChecker::RedrawCollisionPoints()
     graphptrs_.clear();
 
     for( size_t i =0; i < collision_points_.size() ; i ++ )
-    {
         collision_points_[i].draw( graphptrs_, GetEnv() );
-    }
 }
 
 bool VoxelCollisionChecker::SetCollisionPointsRadii( std::istream& sinput )
