@@ -38,7 +38,6 @@ distance_field::PropagationDistanceField createPDFfromVoxelGrid( const distance_
 void drawPDF( const distance_field::PropagationDistanceField& PDF, OpenRAVE::EnvironmentBasePtr penv );
 
 // Collision points
-std::vector<distance_field::CollisionPoint> createCollionPointsForPr2( OpenRAVE::RobotBasePtr body );
-std::vector<distance_field::CollisionPoint> createCollionPointsForPuck( OpenRAVE::RobotBasePtr body );
+std::vector<distance_field::CollisionPoint> createCollionPointsForRobot( OpenRAVE::RobotBasePtr robot, const std::vector<float>& radii, bool use_second_joint=false );
 
 #endif /* INIT_OBS_FIELD_H */

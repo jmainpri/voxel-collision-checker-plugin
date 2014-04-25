@@ -66,7 +66,7 @@ void CollisionPoint::getJacobian(std::vector<OpenRAVE::Vector>& joint_pos,
 
 void CollisionPoint::draw( std::vector< boost::shared_ptr<void> >& graphptr, OpenRAVE::EnvironmentBasePtr penv, bool yellow ) const
 {
-    const OpenRAVE::TransformMatrix& T = m_joint->GetHierarchyParentLink()->GetTransform();
+    const OpenRAVE::TransformMatrix& T = m_joint->GetHierarchyChildLink()->GetTransform();
     OpenRAVE::Vector point = T*m_position;
 
     OpenRAVE::RaveVector<float> vcolors(1.0, m_is_colliding ? 0.0 : 1.0 ,0.0,0.1);

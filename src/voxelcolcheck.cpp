@@ -52,6 +52,8 @@ bool VoxelCollisionChecker::InitModule()
     voxel_size_ = 0.05;
     collision_points_.clear();
     robot_centered_ = false;
+    radii_.clear();
+    radii_.push_back( 0.20 );
 
     RegisterCommand("setdimension",boost::bind(&VoxelCollisionChecker::SetDimension,this,_2),"returns true if ok");
     RegisterCommand("initialize",boost::bind(&VoxelCollisionChecker::Initialize,this,_2),"returns true if ok");
@@ -122,9 +124,10 @@ bool VoxelCollisionChecker::CheckCollision( KinBodyConstPtr pbody1, CollisionRep
 
         if( report.get() != NULL )
         {
-            if( distance_obst < report->minDistance )
+            double distance = ( distance_obst - collision_points_[i].getRadius() );
+            if( distance < report->minDistance )
             {
-                report->minDistance = distance_obst;
+                report->minDistance = distance;
             }
             report->contacts[i].depth = potential;
             report->contacts[i].pos = p;
@@ -253,7 +256,7 @@ bool VoxelCollisionChecker::SendCommand( std::ostream& sout, std::istream& sinpu
     return true;
 }
 
-bool VoxelCollisionChecker::GetCollisionPointPotentialGradient( distance_field::CollisionPoint& collision_point, const OpenRAVE::Vector& p, double& field_distance, double& potential, OpenRAVE::Vector& pg ) const
+bool VoxelCollisionChecker::GetCollisionPointPotentialGradient( distance_field::CollisionPoint& collision_point, const OpenRAVE::Vector& p, double& field_distance, double& potential, OpenRAVE::Vector& pg )
 {
     if( !bInitialized_ ) {
         RAVELOG_INFO("VoxelCollisionChecker ERROR: VoxelCollisionChecker is not initialized!\n");
@@ -296,18 +299,22 @@ void VoxelCollisionChecker::CreateCollisionPoints( RobotBasePtr robot )
     if( robot->GetName() == "Puck" )
     {
         cout << "Compute collision points for " << robot->GetName() << endl;
-        collision_points_ = createCollionPointsForPuck( robot );
-        setDrawingDistance( 15, 50 );
+        radii_.clear();
+        radii_.push_back( 20.0 );
+        collision_points_ = createCollionPointsForRobot( robot, radii_, true );
+        setDrawingDistance( 15, 40 );
     }
     else if( robot->GetName() == "pr2" )
     {
         cout << "Compute collision points for " << robot->GetName() << endl;
-        collision_points_ = createCollionPointsForPr2( robot );
+        collision_points_ = createCollionPointsForRobot( robot, radii_ );
         setDrawingDistance( .15, .40 );
     }
     else {
         RAVELOG_INFO("Does not know how to compute collision points for kinbody : %s\n" , robot->GetName().c_str() );
     }
+
+    cout << "collision_points_.size() : " << collision_points_.size() << endl;
 
     drawClearHandles();
 

@@ -148,7 +148,7 @@ inline double PropagationDistanceField::getDistanceGradient(double x, double y, 
 {
     int gx, gy, gz;
 
-    worldToGrid(x, y, z, gx, gy, gz);
+    worldToGrid( x, y, z, gx, gy, gz );
 
     // if out of bounds, return max distance, and 0 gradient
     // we need extra padding of 1 to get gradients
@@ -164,8 +164,7 @@ inline double PropagationDistanceField::getDistanceGradient(double x, double y, 
     gradient_y = (getDistanceFromCell(gx,gy+1,gz) - getDistanceFromCell(gx,gy-1,gz))*inv_twice_resolution_;
     gradient_z = (getDistanceFromCell(gx,gy,gz+1) - getDistanceFromCell(gx,gy,gz-1))*inv_twice_resolution_;
 
-    return getDistanceFromCell(gx,gy,gz);
-
+    return getDistanceFromCell( gx, gy, gz );
 }
 
 }

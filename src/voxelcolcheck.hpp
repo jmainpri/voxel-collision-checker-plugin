@@ -91,7 +91,7 @@ protected:
     bool Initialize( std::istream& sinput );
     void RedrawCollisionPoints();
     void CreateCollisionPoints( RobotBasePtr robot );
-    bool GetCollisionPointPotentialGradient( distance_field::CollisionPoint& coll_point, const OpenRAVE::Vector& collision_point_pos, double& field_distance, double& potential, OpenRAVE::Vector& gradient) const ;
+    bool GetCollisionPointPotentialGradient( distance_field::CollisionPoint& coll_point, const OpenRAVE::Vector& collision_point_pos, double& field_distance, double& potential, OpenRAVE::Vector& gradient) ;
 
     std::vector< distance_field::CollisionPoint > collision_points_;
 
@@ -109,6 +109,7 @@ protected:
     OpenRAVE::Vector offset_;
     float voxel_size_;
     bool robot_centered_;
+    std::vector<float> radii_;
 };
 
 #endif

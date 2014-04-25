@@ -647,7 +647,7 @@ std::vector<CollisionPoint> getLinksCollisionPoints( OpenRAVE::KinBody::JointPtr
 {
     std::vector<CollisionPoint> collision_points;
 
-    double collision_clearance_default(0.10);
+    double collision_clearance_default( radius );
 
     // double radius = 0.20; // bc->getRadius();
 
@@ -668,7 +668,11 @@ std::vector<CollisionPoint> getLinksCollisionPoints( OpenRAVE::KinBody::JointPtr
     return collision_points;
 }
 
-std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::RobotBasePtr robot )
+//! Generates the collision points for a given robot
+//! iterates through the active joints
+//! the radius for all the collision points is given as input
+//! TODO compute the radii from the KinBody size
+std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::RobotBasePtr robot, const std::vector<float>& radii, bool use_second_joint )
 {
     std::vector<CollisionPoint> collision_points;
 
@@ -696,32 +700,17 @@ std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::RobotBasePtr 
         Vector p1 = j1->GetHierarchyParentLink()->GetTransform().inverse() * j1->GetAnchor();
         Vector p2 = j2->GetHierarchyParentLink()->GetTransform().inverse() * j2->GetAnchor();
 
+        // Make sure the array of radii is big enough
+        double radius( i >= radii.size() ? radii.back() : radii[i] );
+
+        // Get the firs or second joint (2nd in the case of the Puck Robot)
+        OpenRAVE::KinBody::JointPtr joint_attached( use_second_joint ? j2 : j1 );
+
+        // Get links and parent joints
         std::vector<int> parent_joints;
-
-        double radius = 0.2;
-
-        if( robot->GetName() == "Pr2" ){
-            radius = 0.2;
-        }
-        if( robot->GetName() == "Puck" ){
-            radius = 20.0;
-            j1 = j2;
-        }
-
-        std::vector<CollisionPoint> new_points = getLinksCollisionPoints( j1, p1, p2, i, parent_joints, radius );
-
+        std::vector<CollisionPoint> new_points = getLinksCollisionPoints( joint_attached, p1, p2, i, parent_joints, radius );
         collision_points.insert( collision_points.end(), new_points.begin(), new_points.end() );
     }
 
     return collision_points;
-}
-
-std::vector<CollisionPoint> createCollionPointsForPr2( OpenRAVE::RobotBasePtr robot )
-{
-    return createCollionPointsForRobot( robot );
-}
-
-std::vector<CollisionPoint> createCollionPointsForPuck( OpenRAVE::RobotBasePtr robot )
-{
-    return createCollionPointsForRobot( robot );
 }
