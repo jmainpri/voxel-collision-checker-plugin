@@ -310,9 +310,12 @@ void VoxelCollisionChecker::CreateCollisionPoints( RobotBasePtr robot )
     }
 
     drawClearHandles();
-    drawPDF( sdf_, GetEnv() );
 
-    RedrawCollisionPoints();
+    if( bDraw_ )
+    {
+        drawPDF( sdf_, GetEnv() ); // Draws PDF here
+        RedrawCollisionPoints();
+    }
 }
 
 void VoxelCollisionChecker::RedrawCollisionPoints()
@@ -328,6 +331,7 @@ void VoxelCollisionChecker::RedrawCollisionPoints()
 bool VoxelCollisionChecker::SetDimension( std::istream& sinput )
 {
     std::string cmd;
+
     while(!sinput.eof())
     {
         sinput >> cmd;
@@ -397,21 +401,6 @@ bool VoxelCollisionChecker::Initialize( std::istream& sinput )
         // Set voxel grid dimension and origin
         setVoxelGridSize( dimension_.x, dimension_.y, dimension_.z, voxel_size_, origin );
 
-//        if( robots[0]->GetName() == "Puck" )
-//        {
-//            setVoxelGridSize( 500, 800, 30, 5 );
-//            setDrawingDistance( 15, 50 );
-//        }
-
-//        if( robots[0]->GetName() == "pr2" )
-//        {
-//            Transform origin = robots[0]->GetTransform();
-//            origin.trans.y -= 1.00;
-//            origin.trans.z += 0.50;
-//            setVoxelGridSize( 2.0, 2.0, 1.5, 0.025, origin );
-//            setDrawingDistance( .03, .30 );
-//        }
-
         // Create Signed Distance Feild
         VoxelGrid<int> vg = createVoxelGrid( COMPUTE_NEW_VG, GetEnv(), robots[0], colbodies_ );
         sdf_ = createPDFfromVoxelGrid( vg, GetEnv() );
@@ -419,6 +408,7 @@ bool VoxelCollisionChecker::Initialize( std::istream& sinput )
         // Create collision points
         CreateCollisionPoints( robots[0] );
 
+        // Initialization done!!!
         bInitialized_ = true;
         return true;
     }
