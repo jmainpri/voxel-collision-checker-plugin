@@ -226,7 +226,7 @@ VoxelGrid<int> createVoxelGrid(int compute_new_vg, EnvironmentBasePtr penv, Robo
         // first "remove" robot by displacing vertical distance
         Transform robotT = robot->GetTransform();
         robotT.trans.z -= LARGE_DISTANCE;
-        robot->SetTransform(robotT);
+        // robot->SetTransform(robotT);
         int inCollision, numCollisions=0;
         // double posn[3];
         for (int x=0; x<numX; x++)
@@ -254,7 +254,7 @@ VoxelGrid<int> createVoxelGrid(int compute_new_vg, EnvironmentBasePtr penv, Robo
         RAVELOG_INFOA("done collision checking, %d collisions (%f percent)\n", numCollisions, (double)numCollisions/(numX*numY*numZ));
         // add robot back to environment
         robotT.trans.z += LARGE_DISTANCE;
-        robot->SetTransform(robotT);
+        // robot->SetTransform(robotT);
         // remove collision check box
         //penv->LockPhysics(true);
         penv->Remove(unitCollision);

@@ -415,7 +415,7 @@ bool VoxelCollisionChecker::Initialize( std::istream& sinput )
         }
 
         // Remove robot from collision body list
-        colbodies_.erase( colbodies_.begin() + robot_id );
+        // colbodies_.erase( colbodies_.begin() + robot_id );
 
         // Get robot transform and apply offset
 
