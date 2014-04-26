@@ -62,6 +62,9 @@ if __name__ == "__main__":
     # Set position
     indices = robot.GetActiveManipulator().GetArmIndices()
     robot.SetDOFValues( [200,340], indices )
+
+    # Disable Box0 link
+    robot.GetLink('Box0').Enable( False )
  
     # Init collision checker
     collisionChecker = RaveCreateCollisionChecker( orEnv,'VoxelColChecker')
