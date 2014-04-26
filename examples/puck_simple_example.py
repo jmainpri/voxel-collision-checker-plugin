@@ -2,8 +2,6 @@
 # Copyright (c) 2014 Worcester Polytcchnic Institute
 #   Author: Jim Mainprice <jmainprice@wpi.edu>
 
-# -*- coding: utf-8 -*-
-
 from openravepy import *
 from numpy import *
 from misc_transform import *
@@ -52,7 +50,7 @@ if __name__ == "__main__":
     in_collision = orEnv.CheckCollision( robot, report )
     print 'in_collision: ', in_collision
     print 'mindist: ', report.minDistance
-    # print 'contacts: ', report.contacts
+
     for c in report.contacts :
         print "collision point potential : " , str( c.depth )
     
