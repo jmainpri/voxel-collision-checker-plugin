@@ -19,7 +19,12 @@ class TwoDPlanner():
         self.orEnv = Environment()
         self.orEnv.SetViewer('qtcoin')
         self.orEnv.GetViewer().EnvironmentSync()
-        self.orEnv.Load( '../models/stones.env.xml' )
+        self.orEnv.Load( '../models/stones.env.xml' ) 
+
+        self.robot = self.orEnv.GetRobots()[0]
+
+        # Disable Box0 link
+        self.robot.GetLink('Box0').Enable( False )
 
         self.collisionChecker = RaveCreateCollisionChecker( self.orEnv,'VoxelColChecker')
         self.collisionChecker.SendCommand('SetDimension extent 500 800 30 voxelsize 5')
@@ -31,20 +36,18 @@ class TwoDPlanner():
 
     def run( self ) :
 
-        robot = self.orEnv.GetRobots()[0]
-
         # Set planner
         planner = RaveCreatePlanner( self.orEnv, 'birrt' )
         params = Planner.PlannerParameters()
-        params.SetRobotActiveJoints( robot )
+        params.SetRobotActiveJoints( self.robot )
 
         # Set the initial configuration
-        indices = robot.GetActiveManipulator().GetArmIndices()
-        robot.SetDOFValues( [20.0,50.0], indices )
+        indices = self.robot.GetActiveManipulator().GetArmIndices()
+        self.robot.SetDOFValues( [20.0,50.0], indices )
 
         # Set the goal configuration
         params.SetGoalConfig( [200.0,700.0] )
-        planner.InitPlan( robot, params )
+        planner.InitPlan( self.robot, params )
 
         # Create trajectory
         traj = RaveCreateTrajectory( self.orEnv, '' )
@@ -54,8 +57,8 @@ class TwoDPlanner():
 
         if planner.PlanPath(traj) :
             for t in linspace( 0, traj.GetDuration(), nb_of_config ):
-                newrobot = RaveCreateRobot( self.orEnv, robot.GetXMLId() )
-                newrobot.Clone( robot, 0 )
+                newrobot = RaveCreateRobot( self.orEnv, self.robot.GetXMLId() )
+                newrobot.Clone( self.robot, 0 )
                 for link in newrobot.GetLinks():
                     for geom in link.GetGeometries():
                         geom.SetTransparency( 0.3 )
