@@ -93,6 +93,7 @@ protected:
     bool SetDimension( std::istream& sinput );
     bool Initialize( std::istream& sinput );
     bool SetCollisionPointsRadii( std::istream& sinput );
+    bool SetDrawing( std::istream& sinput );
     void RedrawCollisionPoints();
     void CreateCollisionPoints( RobotBasePtr robot );
     bool GetCollisionPointPotentialGradient( distance_field::CollisionPoint& coll_point, const OpenRAVE::Vector& collision_point_pos, double& field_distance, double& potential, OpenRAVE::Vector& gradient) ;

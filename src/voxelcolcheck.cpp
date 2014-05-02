@@ -62,6 +62,7 @@ bool VoxelCollisionChecker::InitModule()
     RegisterCommand("setdimension",boost::bind(&VoxelCollisionChecker::SetDimension,this,_2),"returns true if ok");
     RegisterCommand("initialize",boost::bind(&VoxelCollisionChecker::Initialize,this,_2),"returns true if ok");
     RegisterCommand("setcollisionpointsradii",boost::bind(&VoxelCollisionChecker::SetCollisionPointsRadii,this,_2),"returns true if ok");
+    RegisterCommand("setdrawing",boost::bind(&VoxelCollisionChecker::SetDrawing,this,_2),"returns true if ok");
 
     return true;
 }
@@ -102,7 +103,10 @@ bool VoxelCollisionChecker::GetCollisionPointPotentialGradient( distance_field::
     OpenRAVE::Vector field_gradient;
 
     // Compute the distance gradient and distance to nearest obstacle
-    field_distance = sdf_.getDistanceGradient( p.x, p.y, p.z, pg.x, pg.y, pg.z );
+    double px = pg.x;
+    double py = pg.y;
+    double pz = pg.z;
+    field_distance = sdf_.getDistanceGradient( p.x, p.y, p.z, px, py, pz );
 
     double d = field_distance - collision_point.getRadius();
 
@@ -320,6 +324,35 @@ void VoxelCollisionChecker::RedrawCollisionPoints()
         collision_points_[i].draw( graphptrs_, GetEnv() );
 }
 
+bool VoxelCollisionChecker::SetDrawing( std::istream& sinput )
+{
+    std::string cmd;
+    while(!sinput.eof())
+    {
+        sinput >> cmd;
+        if( !sinput )
+            break;
+
+        if( cmd == "off" )
+        {
+            graphptrs_.clear();
+            drawClearHandles();
+            bDraw_ = false;
+        }
+        if( cmd == "on" )
+        {
+            bDraw_ = true;
+        }
+        else break;
+        if( !sinput ) {
+            RAVELOG_DEBUG("failed\n");
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool VoxelCollisionChecker::SetCollisionPointsRadii( std::istream& sinput )
 {
     radii_.clear();
@@ -407,12 +440,12 @@ bool VoxelCollisionChecker::Initialize( std::istream& sinput )
         colbodies_.clear();
         GetEnv()->GetBodies( colbodies_ );
 
-        int robot_id = 0;
-        for( size_t i=0; i<colbodies_.size(); i++ )
-        {
-            if( colbodies_[i]->GetName() == robots[0]->GetName() )
-                robot_id = i;
-        }
+//        int robot_id = 0;
+//        for( size_t i=0; i<colbodies_.size(); i++ )
+//        {
+//            if( colbodies_[i]->GetName() == robots[0]->GetName() )
+//                robot_id = i;
+//        }
 
         // Remove robot from collision body list
         // colbodies_.erase( colbodies_.begin() + robot_id );

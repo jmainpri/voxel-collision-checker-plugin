@@ -51,10 +51,11 @@ if __name__ == "__main__":
     robot.SetActiveManipulator(1)
     # indices = robot.GetActiveManipulator().GetArmIndices()
     indices = [27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37]
-
-    links = []
-
+    robot.SetActiveDOFs( indices )
+    robot.SetDOFValues( [-0.5,0.5,0.5,-0.6,-1.5,-1,0,0,0,0,0], indices )
+    
     # Print the limits and get active links
+    links = []
     for jIdx, j in enumerate(robot.GetJoints()):
         if jIdx not in indices :
             continue
@@ -70,13 +71,10 @@ if __name__ == "__main__":
     
     for l in links : l.Enable( False ) 
 
-    robot.SetActiveDOFs( indices )
-    robot.SetDOFValues( [-0.5,0.5,0.5,-0.6,-1.5,-1,0,0,0,0,0], indices )
-
     # Init collision checker
     collisionChecker = RaveCreateCollisionChecker( orEnv,'VoxelColChecker')
     collisionChecker.SendCommand('SetDimension robotcentered extent 2.0 2.5 2.0 offset -0.5 -1.25 0')
-    collisionChecker.SendCommand('SetCollisionPointsRadii radii 6 0.22 0.15 0.14 0.1 0.1 0.1 0.1 0.1')
+    collisionChecker.SendCommand('SetCollisionPointsRadii radii 10 0.22 0.15 0.14 0.1 0.1 0.1 0.1 0.1 0.1')
     collisionChecker.SendCommand('Initialize')
 
     orEnv.SetCollisionChecker( collisionChecker )
