@@ -114,7 +114,7 @@ protected:
     OpenRAVE::Vector offset_;
     float voxel_size_;
     bool robot_centered_;
-    std::vector<float> radii_;
+    std::vector< std::pair<bool,float> > radii_;
     double draw_distance_;
     double draw_color_threshold_;
 };

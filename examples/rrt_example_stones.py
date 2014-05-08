@@ -14,12 +14,12 @@ import sys
 
 class TwoDPlanner():
 
-    def __init__( self ):
+    def __init__(self):
 
         self.orEnv = Environment()
         self.orEnv.SetViewer('qtcoin')
         self.orEnv.GetViewer().EnvironmentSync()
-        self.orEnv.Load( '../models/stones.env.xml' ) 
+        self.orEnv.Load('../models/stones.env.xml')
 
         self.robot = self.orEnv.GetRobots()[0]
 
@@ -29,12 +29,12 @@ class TwoDPlanner():
         self.collisionChecker = RaveCreateCollisionChecker( self.orEnv,'VoxelColChecker')
         self.collisionChecker.SendCommand('SetDimension extent 500 800 30 voxelsize 5')
         self.collisionChecker.SendCommand('Initialize')
-        self.orEnv.SetCollisionChecker( self.collisionChecker ) 
+        self.orEnv.SetCollisionChecker(self.collisionChecker)
 
         self.drawingHandles = []
         self.drawingHandles.append( misc.DrawAxes( self.orEnv, eye(4), 30 ) ) 
 
-    def run( self ) :
+    def run(self):
 
         # Set planner
         planner = RaveCreatePlanner( self.orEnv, 'birrt' )
@@ -55,7 +55,7 @@ class TwoDPlanner():
         # Number of configurations drawing the path
         nb_of_config = 30
 
-        if planner.PlanPath(traj) :
+        if planner.PlanPath(traj):
             for t in linspace( 0, traj.GetDuration(), nb_of_config ):
                 newrobot = RaveCreateRobot( self.orEnv, self.robot.GetXMLId() )
                 newrobot.Clone( self.robot, 0 )

@@ -41,7 +41,6 @@ class CollisionPoint
 public:
 
     CollisionPoint(OpenRAVE::KinBody::JointPtr j, const std::vector<int>& parent_joints, double radius, double clearance, int segment_number, const OpenRAVE::Vector& position);
-
     CollisionPoint(const CollisionPoint &point, const std::vector<int>& parent_joints);
 
     virtual ~CollisionPoint();
@@ -80,6 +79,7 @@ public:
     void draw( std::vector< boost::shared_ptr<void> >& graphptr, OpenRAVE::EnvironmentBasePtr penv, bool yellow=true) const;
 
 
+    bool m_is_active;                     /**< Test collision point */
     bool m_is_colliding;                  /**< Collision point in collision */
 
 private:

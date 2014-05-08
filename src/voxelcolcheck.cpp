@@ -57,7 +57,7 @@ bool VoxelCollisionChecker::InitModule()
     collision_points_.clear();
     robot_centered_ = false;
     radii_.clear();
-    radii_.push_back( 0.20 );
+    radii_.push_back( std::make_pair( true, 0.20 ) );
 
     RegisterCommand("setdimension",boost::bind(&VoxelCollisionChecker::SetDimension,this,_2),"returns true if ok");
     RegisterCommand("initialize",boost::bind(&VoxelCollisionChecker::Initialize,this,_2),"returns true if ok");
@@ -186,6 +186,20 @@ bool VoxelCollisionChecker::CheckCollision( KinBodyConstPtr pbody1, CollisionRep
         }
     }
 
+//    std::map<int,bool> body_colliding;
+
+//    for( size_t i=0;i<collision_points_.size();i++)
+//    {
+//        int body_id = collision_points_[i].getSegmentNumber();
+//        if( body_colliding[body_id] )
+//            continue;
+
+//        if( collision_points_[i].m_is_colliding ) {
+//            body_colliding[body_id] = true;
+//            cout << "body_id : " << body_id << ", " << collision_points_[i].getJointName() << " is colliding" << endl;
+//        }
+//    }
+
     return in_collision;
 }
 
@@ -296,7 +310,7 @@ void VoxelCollisionChecker::CreateCollisionPoints( RobotBasePtr robot )
     {
         cout << "Compute collision points for " << robot->GetName() << endl;
         radii_.clear();
-        radii_.push_back( 20.0 );
+        radii_.push_back( std::make_pair( true, 20.0 ) );
         collision_points_ = createCollionPointsForRobot( GetEnv(), robot, radii_, true );
         setDrawingDistance( 15, 40 );
     }
@@ -311,7 +325,9 @@ void VoxelCollisionChecker::CreateCollisionPoints( RobotBasePtr robot )
 
     if( bDraw_ )
     {
-        drawPDF( sdf_, GetEnv() ); // Draws PDF here
+        if( bInitialized_ )
+            drawPDF( sdf_, GetEnv() ); // Draws PDF here
+
         RedrawCollisionPoints();
     }
 }
@@ -321,7 +337,12 @@ void VoxelCollisionChecker::RedrawCollisionPoints()
     graphptrs_.clear();
 
     for( size_t i =0; i < collision_points_.size() ; i ++ )
-        collision_points_[i].draw( graphptrs_, GetEnv() );
+    {
+        if( radii_[ collision_points_[i].getSegmentNumber() ].first )
+        {
+            collision_points_[i].draw( graphptrs_, GetEnv() );
+        }
+    }
 }
 
 bool VoxelCollisionChecker::SetDrawing( std::istream& sinput )
@@ -342,6 +363,8 @@ bool VoxelCollisionChecker::SetDrawing( std::istream& sinput )
         if( cmd == "on" )
         {
             bDraw_ = true;
+            if( bInitialized_ )
+                drawPDF( sdf_, GetEnv() ); // Draws PDF here
         }
         else break;
         if( !sinput ) {
@@ -372,7 +395,20 @@ bool VoxelCollisionChecker::SetCollisionPointsRadii( std::istream& sinput )
             sinput >> temp;
             radii_.resize( temp );
             for( size_t i=0; i<temp; i++ ) {
-                sinput >> radii_[i];
+                radii_[i].first = true;
+                sinput >> radii_[i].second;
+            }
+        }
+        else if( cmd == "activation" )
+        {
+            cout << cmd << endl;
+            // note that this appends to goals, does not overwrite them
+            size_t temp;
+            sinput >> temp;
+            radii_.resize( temp );
+            for( size_t i=0; i<temp; i++ ) {
+                sinput >> radii_[i].first;
+                cout << "radii_[" << i << "] : " << radii_[i].first << endl;
             }
         }
         else break;
@@ -461,6 +497,8 @@ bool VoxelCollisionChecker::Initialize( std::istream& sinput )
 
         // Set voxel grid dimension and origin
         setVoxelGridSize( dimension_.x, dimension_.y, dimension_.z, voxel_size_, origin );
+
+        cout << "create voxel grid" << endl;
 
         // Create Signed Distance Feild
         VoxelGrid<int> vg = createVoxelGrid( COMPUTE_NEW_VG, GetEnv(), robots[0], colbodies_ );

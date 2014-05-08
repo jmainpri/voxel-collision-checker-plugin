@@ -374,6 +374,8 @@ void drawPDF( const PropagationDistanceField& PDF, EnvironmentBasePtr penv )
     x_slices[0] = 20;
     x_slices[1] = 60;
 
+    cout << "draw PDF : numX : " << numX << " , numY : " << numY << " , numZ : " << numZ << endl;
+
     // for (int i=0; i<int(x_slices.size()); i++){
     //int x = x_slices[i];
     for (int x=0; x<numX; x++){
@@ -647,21 +649,22 @@ std::vector<CollisionPoint> getLinksCollisionPoints( OpenRAVE::KinBody::JointPtr
 {
     std::vector<CollisionPoint> collision_points;
 
-    double collision_clearance_default( radius );
+    double collision_clearance_default =  std::min( radius/3, 0.10 );
 
-    // double radius = 0.20; // bc->getRadius();
-
-    double length = std::sqrt( (p1-p2).lengthsqr2() ); // bc->getLength();
+    double length = std::sqrt( (p1-p2).lengthsqr3() );
 
     double spacing = radius / 2.0;
-    int num_points = ceil( length / spacing ) + 1;
+    int num_points = ( length / spacing ) + 1;
     spacing = length / ( num_points - 1.0 );
 
     cout << "segment number : " << segment_number << endl;
+    cout << "length : " << length << endl;
+    cout << "spacing : " << spacing << endl;
+    cout << "num_points : " << num_points << endl;
 
     for (int i=0; i<num_points; ++i)
     {
-        Vector p = p1 + ((double)i/(double)num_points)*( p2 - p1 );
+        Vector p = num_points==1 ? p1 : p1 + ((double)i/(double)(num_points-1))*( p2 - p1 );
         collision_points.push_back( CollisionPoint( j, parent_joints, radius, collision_clearance_default, segment_number, p) );
     }
 
@@ -672,7 +675,7 @@ std::vector<CollisionPoint> getLinksCollisionPoints( OpenRAVE::KinBody::JointPtr
 //! iterates through the active joints
 //! the radius for all the collision points is given as input
 //! TODO compute the radii from the KinBody size
-std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::EnvironmentBasePtr penv, OpenRAVE::RobotBasePtr robot, const std::vector<float>& radii, bool use_second_joint )
+std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::EnvironmentBasePtr penv, OpenRAVE::RobotBasePtr robot, const std::vector<std::pair<bool,float> >& radii, bool use_second_joint )
 {
     std::vector<CollisionPoint> collision_points;
 
@@ -684,33 +687,59 @@ std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::EnvironmentBa
         OpenRAVE::KinBody::JointPtr j = robot->GetJointFromDOFIndex( active_dofs[i] );
 
         if( find( joints.begin(), joints.end(), j ) == joints.end() )
-        {
             joints.push_back( j );
-        }
     }
 
     std::vector< OpenRAVE::RaveVector<float> > vpoints;
-    std::vector<float> vcolors(3,0);
+    OpenRAVE::RaveVector<float> vcolor(0.,0.,0.,1);
+
+    cout << "nb of joints : " << joints.size() << endl;
 
     for( size_t i=0; i<joints.size()-1; i++ )
     {
+        if( radii[i].first == false ){
+            continue;
+        }
+
         OpenRAVE::KinBody::JointPtr j1 = joints[i];
         OpenRAVE::KinBody::JointPtr j2 = joints[i+1];
 
-//        cout << "j1.GetName() : " << j1->GetName() << endl;
-//        cout << "j2.GetName() : " << j2->GetName() << endl;
+        OpenRAVE::TransformMatrix T = j1->GetHierarchyChildLink()->GetTransform().inverse();
 
-        Vector p1 = j1->GetHierarchyChildLink()->GetTransform().inverse() * ( use_second_joint ? j2 : j1 )->GetAnchor();
-        Vector p2 = j1->GetHierarchyChildLink()->GetTransform().inverse() * j2->GetAnchor();
+        OpenRAVE::Vector p1 = T * ( use_second_joint ? j2 : j1 )->GetAnchor();
+        OpenRAVE::Vector p2 = T * j2->GetAnchor();
+//        OpenRAVE::Vector p2 = T * j2->GetHierarchyChildLink()->GetTransform().trans;
 
-//        cout << "p1 : " << p1 << endl;
-//        cout << "p2 : " << p1 << endl;
+//        if( false )
+//        {
+//            cout << "j1.GetName() : " << j1->GetName() << endl;
+//            cout << "j2.GetName() : " << j2->GetName() << endl;
 
-        vpoints.push_back( j1->GetAnchor() );
-        vpoints.push_back( j2->GetAnchor() );
+//            cout << "j1->GetAnchor() : " << j1->GetAnchor() << endl;
+//            cout << "j2->GetAnchor() : " << j2->GetAnchor() << endl;
+
+//            cout << "use_second_joint : " << use_second_joint << endl;
+
+//            cout << "p1 : " << p1 << endl;
+//            cout << "p2 : " << p2 << endl;
+
+//            cout << " j1->GetHierarchyChildLink()->GetTransform().trans : " << j1->GetHierarchyChildLink()->GetTransform().trans << endl;
+//            cout << " j2->GetHierarchyChildLink()->GetTransform().trans : " << j2->GetHierarchyChildLink()->GetTransform().trans << endl;
+
+//            vpoints.push_back( j1->GetHierarchyChildLink()->GetTransform().trans );
+//            vpoints.push_back( j2->GetHierarchyChildLink()->GetTransform().trans );
+
+//            cout << "dist : " << std::sqrt(( p1 - p2 ).lengthsqr3()) << endl;
+//        }
+
+//        if( i == 0 )
+//        {
+//            vpoints.push_back( p1 );
+//            vpoints.push_back( p2 );
+//        }
 
         // Make sure the array of radii is big enough
-        double radius( i >= radii.size() ? radii.back() : radii[i] );
+        double radius( i >= radii.size() ? radii.back().second : radii[i].second );
 
         cout << "radius[ " << i << " ] : " << radius << endl;
 
@@ -720,10 +749,11 @@ std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::EnvironmentBa
         // Get links and parent joints
         std::vector<int> parent_joints;
         std::vector<CollisionPoint> new_points = getLinksCollisionPoints( joint_attached, p1, p2, i, parent_joints, radius );
+        cout << "for joint : " << joint_attached->GetName() << " , " << new_points.size() << endl;
         collision_points.insert( collision_points.end(), new_points.begin(), new_points.end() );
     }
 
-    // graphptr.push_back( penv->plot3( &vpoints[0].x, vpoints.size(), sizeof( vpoints[0]), .10, &vcolors[0], 1 ) );
+//    graphptr.push_back( penv->plot3( &vpoints[0].x, vpoints.size(), sizeof( vpoints[0]), .10, vcolor, 1 ) );
 
     return collision_points;
 }

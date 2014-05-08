@@ -1,7 +1,10 @@
 #include "collision_point.hpp"
 #include <cmath>
+#include <iostream>
 
 using namespace distance_field;
+using std::cout;
+using std::endl;
 
 CollisionPoint::CollisionPoint(
         OpenRAVE::KinBody::JointPtr j,
@@ -10,6 +13,7 @@ CollisionPoint::CollisionPoint(
         double clearance,
         int segment_number,
         const OpenRAVE::Vector& position) :
+    m_is_active(true),
     m_is_colliding(false),
     m_joint(j),
     m_parent_joints(parent_joints),
@@ -24,6 +28,7 @@ CollisionPoint::CollisionPoint(
 }
 
 CollisionPoint::CollisionPoint(const CollisionPoint &point, const std::vector<int>& parent_joints):
+    m_is_active(point.m_is_active),
     m_is_colliding(point.m_is_colliding),
     m_parent_joints(parent_joints),
     m_radius(point.m_radius),
@@ -66,6 +71,10 @@ void CollisionPoint::getJacobian(std::vector<OpenRAVE::Vector>& joint_pos,
 
 void CollisionPoint::draw( std::vector< boost::shared_ptr<void> >& graphptr, OpenRAVE::EnvironmentBasePtr penv, bool yellow ) const
 {
+    if( m_is_active == false ){
+        return;
+    }
+
     const OpenRAVE::TransformMatrix& T = m_joint->GetHierarchyChildLink()->GetTransform();
     OpenRAVE::Vector point = T*m_position;
 
@@ -74,6 +83,9 @@ void CollisionPoint::draw( std::vector< boost::shared_ptr<void> >& graphptr, Ope
     std::vector<OpenRAVE::RaveVector<float> > vpoints;
     OpenRAVE::RaveVector<float> pnt( point[0], point[1], point[2] );
     vpoints.push_back( pnt );
+
+    cout << "pnt : " << pnt << endl;
+    cout << "radius : " << m_radius << endl;
 
     graphptr.push_back( penv->plot3( &vpoints[0].x, vpoints.size(), sizeof( vpoints[0]), m_radius, vcolors, 1 ) );
 }

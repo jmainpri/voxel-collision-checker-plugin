@@ -43,6 +43,7 @@ if __name__ == "__main__":
     collisionChecker = RaveCreateCollisionChecker( orEnv,'VoxelColChecker')
     collisionChecker.SendCommand('SetDimension extent 500 800 30 voxelsize 5')
     collisionChecker.SendCommand('Initialize')
+    collisionChecker.SendCommand('SetDrawing on')
     orEnv.SetCollisionChecker( collisionChecker )
 
     print "checking collision for robot : " + robot.GetName()

@@ -73,9 +73,14 @@ if __name__ == "__main__":
 
     # Init collision checker
     collisionChecker = RaveCreateCollisionChecker( orEnv,'VoxelColChecker')
+    collisionChecker.SendCommand('SetDrawing on')
     collisionChecker.SendCommand('SetDimension robotcentered extent 2.0 2.5 2.0 offset -0.5 -1.25 0')
-    collisionChecker.SendCommand('SetCollisionPointsRadii radii 10 0.22 0.15 0.14 0.1 0.1 0.1 0.1 0.1 0.1')
+    collisionChecker.SendCommand('SetCollisionPointsRadii radii 10 0.22 0.15 0.14 0.1 0.1 0.1 0.1 0.1 0.1 0.1')
+    print "Press return to construct SDF."
+    sys.stdin.readline()
+
     collisionChecker.SendCommand('Initialize')
+    collisionChecker.SendCommand('SetDrawing on')
 
     orEnv.SetCollisionChecker( collisionChecker )
 
