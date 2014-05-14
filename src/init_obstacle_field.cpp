@@ -649,7 +649,7 @@ std::vector<CollisionPoint> getLinksCollisionPoints( OpenRAVE::KinBody::JointPtr
 {
     std::vector<CollisionPoint> collision_points;
 
-    double collision_clearance_default =  std::min( radius/3, 0.10 );
+    double collision_clearance_default =  std::min( radius/3, 0.05 );
 
     double length = std::sqrt( (p1-p2).lengthsqr3() );
 

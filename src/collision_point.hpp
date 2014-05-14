@@ -59,12 +59,13 @@ public:
         return m_parent_joints;
     }
 
-    std::string getJointName() const
+    const std::string& getJointName() const
     {
-        return m_joint->GetName();
+        return m_name;
     }
 
-    void getTransformMatrixedPosition( OpenRAVE::Vector& position ) const;
+//    void getTransformMatrixedPosition( OpenRAVE::Vector& position ) const;
+    void getTransformMatrixedPosition( const OpenRAVE::Transform& T, OpenRAVE::Vector& position ) const;
     void getTransformMatrixedPosition( std::vector<OpenRAVE::TransformMatrix>& segment_frames, OpenRAVE::Vector& position ) const;
     void getTransformMatrixedPosition( std::vector<std::vector<double> >& segment_frames, OpenRAVE::Vector& position ) const;
 
@@ -76,7 +77,7 @@ public:
                      const std::vector<int>& group_joint_to_move3d_joint_index) const;
                      */
 
-    void draw( std::vector< boost::shared_ptr<void> >& graphptr, OpenRAVE::EnvironmentBasePtr penv, bool yellow=true) const;
+    void draw( std::vector< boost::shared_ptr<void> >& graphptr, OpenRAVE::RobotBasePtr robot, OpenRAVE::EnvironmentBasePtr penv, bool yellow=true) const;
 
 
     bool m_is_active;                     /**< Test collision point */
@@ -84,7 +85,8 @@ public:
 
 private:
 
-    OpenRAVE::KinBody::JointPtr m_joint; // Joint to draw the collision point
+    // OpenRAVE::KinBody::JointPtr m_joint; // Joint to draw the collision point
+    std::string m_name; // joint name
 
     std::vector<int> m_parent_joints;      /**< Which joints can influence the motion of this point */
     double m_radius;                       /**< Radius of the sphere */
@@ -161,9 +163,13 @@ inline void CollisionPoint::getTransformMatrixedPosition(std::vector<std::vector
     position = T*m_position;
 }
 
-inline void CollisionPoint::getTransformMatrixedPosition( OpenRAVE::Vector& position ) const
+//inline void CollisionPoint::getTransformMatrixedPosition( OpenRAVE::Vector& position ) const
+//{
+//    getTransformMatrixedPosition( m_joint->GetHierarchyChildLink()->GetTransform(), position );
+//}
+
+inline void CollisionPoint::getTransformMatrixedPosition( const OpenRAVE::Transform& T, OpenRAVE::Vector& position ) const
 {
-    const OpenRAVE::Transform& T = m_joint->GetHierarchyChildLink()->GetTransform();
     position = T*m_position;
 }
 

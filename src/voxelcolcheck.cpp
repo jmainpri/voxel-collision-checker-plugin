@@ -59,12 +59,41 @@ bool VoxelCollisionChecker::InitModule()
     radii_.clear();
     radii_.push_back( std::make_pair( true, 0.20 ) );
 
+    RegisterFunctions();
+
+    return true;
+}
+
+void VoxelCollisionChecker::RegisterFunctions()
+{
     RegisterCommand("setdimension",boost::bind(&VoxelCollisionChecker::SetDimension,this,_2),"returns true if ok");
     RegisterCommand("initialize",boost::bind(&VoxelCollisionChecker::Initialize,this,_2),"returns true if ok");
     RegisterCommand("setcollisionpointsradii",boost::bind(&VoxelCollisionChecker::SetCollisionPointsRadii,this,_2),"returns true if ok");
     RegisterCommand("setdrawing",boost::bind(&VoxelCollisionChecker::SetDrawing,this,_2),"returns true if ok");
+}
 
-    return true;
+void VoxelCollisionChecker::Clone(InterfaceBaseConstPtr preference, int cloningoptions)
+{
+    const VoxelCollisionChecker* vox_checker = dynamic_cast< const VoxelCollisionChecker* >(preference.get());
+
+    bInitialized_ = vox_checker->bInitialized_;
+    collision_points_ = vox_checker->collision_points_;
+    sdf_ = vox_checker->sdf_;
+    Tvg_ = vox_checker->Tvg_; //transform of the voxel grid center
+    bDraw_ = vox_checker->bDraw_;
+    graphptrs_ = vox_checker->graphptrs_;
+    vplotpoints_ = vox_checker->vplotpoints_;
+    vplotcolors_ = vox_checker->vplotcolors_;
+    dimension_ = vox_checker->dimension_;
+    offset_ = vox_checker->offset_;
+    voxel_size_= vox_checker->voxel_size_ ;
+    robot_centered_ = vox_checker->robot_centered_;
+    radii_ = vox_checker->radii_;
+    draw_distance_ = vox_checker->draw_distance_;
+    draw_color_threshold_ = vox_checker->draw_color_threshold_;
+
+    colbodies_.clear();
+    GetEnv()->GetBodies( colbodies_ );
 }
 
 bool VoxelCollisionChecker::InitEnvironment()
@@ -91,10 +120,10 @@ bool VoxelCollisionChecker::InitKinBody( KinBodyPtr pbody )
     return true;
 }
 
-bool VoxelCollisionChecker::GetCollisionPointPotentialGradient( distance_field::CollisionPoint& collision_point, const OpenRAVE::Vector& p, double& field_distance, double& potential, OpenRAVE::Vector& pg )
+bool VoxelCollisionChecker::GetCollisionPointPotentialGradient( const distance_field::CollisionPoint& collision_point, const OpenRAVE::Vector& p, double& field_distance, double& potential, OpenRAVE::Vector& pg ) const
 {
     if( !bInitialized_ ) {
-        RAVELOG_INFO("VoxelCollisionChecker ERROR: VoxelCollisionChecker is not initialized!\n");
+        RAVELOG_INFO("ERROR: not initialized!\n");
         return false;
     }
 
@@ -157,32 +186,40 @@ bool VoxelCollisionChecker::CheckCollision( KinBodyConstPtr pbody1, CollisionRep
         report->minDistance = std::numeric_limits<dReal>::max();
     }
 
-    for( size_t i =0; i<collision_points_.size() ; i ++ )
+    if( !collision_points_.empty() )
     {
-        collision_points_[i].m_is_colliding = false;
-        collision_points_[i].getTransformMatrixedPosition( p );
+        OpenRAVE::KinBody::JointPtr joint = pbody1->GetJoint( collision_points_[0].getJointName() );
 
-        if( do_report ) // Complete report case (compute potential)
+        for( size_t i =0; i<collision_points_.size() ; i ++ )
         {
-            is_point_in_collision = GetCollisionPointPotentialGradient( collision_points_[i], p, distance_obst, potential, pg );
+            if( joint->GetName() != collision_points_[i].getJointName() )
+                joint = pbody1->GetJoint( collision_points_[i].getJointName() );
 
-            double distance = ( distance_obst - collision_points_[i].getRadius() );
-            if( distance < report->minDistance )
-                report->minDistance = distance;
+            collision_points_[i].m_is_colliding = false;
+            collision_points_[i].getTransformMatrixedPosition( joint->GetHierarchyChildLink()->GetTransform(), p );
 
-            report->contacts[i].depth = potential; // depth should be "distance" (highjack for optimizers)
-            report->contacts[i].pos = p;
-        }
-        else // Simple case check distance
-        {
-            distance_obst = sdf_.getDistance( sdf_( p.x, p.y, p.z) );
-            is_point_in_collision = ( distance_obst <= collision_points_[i].getRadius() );
-        }
+            if( do_report ) // Complete report case (compute potential)
+            {
+                is_point_in_collision = GetCollisionPointPotentialGradient( collision_points_[i], p, distance_obst, potential, pg );
 
-        if( is_point_in_collision  )
-        {
-            collision_points_[i].m_is_colliding = true;
-            in_collision = true;
+                double distance = ( distance_obst - collision_points_[i].getRadius() );
+                if( distance < report->minDistance )
+                    report->minDistance = distance;
+
+                report->contacts[i].depth = potential; // depth should be "distance" (highjack for optimizers)
+                report->contacts[i].pos = p;
+            }
+            else // Simple case check distance
+            {
+                distance_obst = sdf_.getDistance( sdf_( p.x, p.y, p.z) );
+                is_point_in_collision = ( distance_obst <= collision_points_[i].getRadius() );
+            }
+
+            if( is_point_in_collision  )
+            {
+                collision_points_[i].m_is_colliding = true;
+                in_collision = true;
+            }
         }
     }
 
@@ -336,11 +373,14 @@ void VoxelCollisionChecker::RedrawCollisionPoints()
 {
     graphptrs_.clear();
 
+    std::vector<RobotBasePtr> robots;
+    GetEnv()->GetRobots( robots );
+
     for( size_t i =0; i < collision_points_.size() ; i ++ )
     {
         if( radii_[ collision_points_[i].getSegmentNumber() ].first )
         {
-            collision_points_[i].draw( graphptrs_, GetEnv() );
+            collision_points_[i].draw( graphptrs_, robots[0], GetEnv() );
         }
     }
 }

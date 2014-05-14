@@ -81,28 +81,36 @@ public:
     bool CheckCollision(KinBodyConstPtr pbody1, std::vector<std::vector<Vector> >& vvLinkPoints, CollisionReportPtr report = CollisionReportPtr());
     bool CheckCollision(KinBodyConstPtr pbody1, std::vector<std::vector<Vector> >& vvLinkPoints, std::vector<std::vector<bool> >& vvPointsColliding, CollisionReportPtr report = CollisionReportPtr());
 
+    /// \brief Clone the contents of an interface to the current interface.
+    ///
+    /// \param preference the interface whose information to clone
+    /// \param cloningoptions mask of CloningOptions
+    /// \throw openrave_exception if command doesn't succeed
+    virtual void Clone(InterfaceBaseConstPtr preference, int cloningoptions);
+
     // Send commands to the collision checker
     virtual bool SendCommand( std::ostream& sout, std::istream& sinput );
 
+    // Is module initialized
     bool bInitialized_;
-
 
 protected:
 
     bool InitModule();
+    void RegisterFunctions();
     bool SetDimension( std::istream& sinput );
     bool Initialize( std::istream& sinput );
     bool SetCollisionPointsRadii( std::istream& sinput );
     bool SetDrawing( std::istream& sinput );
     void RedrawCollisionPoints();
     void CreateCollisionPoints( RobotBasePtr robot );
-    bool GetCollisionPointPotentialGradient( distance_field::CollisionPoint& coll_point, const OpenRAVE::Vector& collision_point_pos, double& field_distance, double& potential, OpenRAVE::Vector& gradient) ;
+    bool GetCollisionPointPotentialGradient( const distance_field::CollisionPoint& coll_point, const OpenRAVE::Vector& collision_point_pos, double& field_distance, double& potential, OpenRAVE::Vector& gradient) const;
 
     std::vector< distance_field::CollisionPoint > collision_points_;
 
     distance_field::PropagationDistanceField sdf_;
 
-    Transform Tvg_; //transform of the voxel grid center
+    OpenRAVE::Transform Tvg_; //transform of the voxel grid center
     
     bool bDraw_;
     std::vector<  boost::shared_ptr<void>  > graphptrs_;

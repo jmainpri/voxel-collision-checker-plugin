@@ -15,7 +15,8 @@ CollisionPoint::CollisionPoint(
         const OpenRAVE::Vector& position) :
     m_is_active(true),
     m_is_colliding(false),
-    m_joint(j),
+//    m_joint(j),
+    m_name(j->GetName()),
     m_parent_joints(parent_joints),
     m_radius(radius),
     m_volume((4.0/3.0)*M_PI*m_radius*m_radius*m_radius),
@@ -30,6 +31,7 @@ CollisionPoint::CollisionPoint(
 CollisionPoint::CollisionPoint(const CollisionPoint &point, const std::vector<int>& parent_joints):
     m_is_active(point.m_is_active),
     m_is_colliding(point.m_is_colliding),
+    m_name(point.m_name),
     m_parent_joints(parent_joints),
     m_radius(point.m_radius),
     m_volume((4.0/3.0)*M_PI*m_radius*m_radius*m_radius),
@@ -69,13 +71,15 @@ void CollisionPoint::getJacobian(std::vector<OpenRAVE::Vector>& joint_pos,
 }
 */
 
-void CollisionPoint::draw( std::vector< boost::shared_ptr<void> >& graphptr, OpenRAVE::EnvironmentBasePtr penv, bool yellow ) const
+void CollisionPoint::draw( std::vector< boost::shared_ptr<void> >& graphptr,
+                           OpenRAVE::RobotBasePtr robot,
+                           OpenRAVE::EnvironmentBasePtr penv, bool yellow ) const
 {
     if( m_is_active == false ){
         return;
     }
 
-    const OpenRAVE::TransformMatrix& T = m_joint->GetHierarchyChildLink()->GetTransform();
+    const OpenRAVE::TransformMatrix& T = robot->GetJoint(m_name)->GetHierarchyChildLink()->GetTransform();
     OpenRAVE::Vector point = T*m_position;
 
     OpenRAVE::RaveVector<float> vcolors( 1.0, m_is_colliding ? 0.0 : 1.0 , 0.0, 0.2 );
