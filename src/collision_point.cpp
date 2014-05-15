@@ -88,8 +88,8 @@ void CollisionPoint::draw( std::vector< boost::shared_ptr<void> >& graphptr,
     OpenRAVE::RaveVector<float> pnt( point[0], point[1], point[2] );
     vpoints.push_back( pnt );
 
-    cout << "pnt : " << pnt << endl;
-    cout << "radius : " << m_radius << endl;
+//    cout << "pnt : " << pnt << endl;
+//    cout << "radius : " << m_radius << endl;
 
     graphptr.push_back( penv->plot3( &vpoints[0].x, vpoints.size(), sizeof( vpoints[0]), m_radius, vcolors, 1 ) );
 }

@@ -114,7 +114,7 @@ bool VoxelCollisionChecker::InitEnvironment()
 /// notified when a new body has been initialized in the environment
 bool VoxelCollisionChecker::InitKinBody( KinBodyPtr pbody )
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
+//    std::cout << __PRETTY_FUNCTION__ << std::endl;
     UserDataPtr pdata( new UserData() );
     SetCollisionData( pbody, pdata );
     return true;

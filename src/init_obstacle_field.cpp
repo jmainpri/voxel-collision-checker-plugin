@@ -657,10 +657,10 @@ std::vector<CollisionPoint> getLinksCollisionPoints( OpenRAVE::KinBody::JointPtr
     int num_points = ( length / spacing ) + 1;
     spacing = length / ( num_points - 1.0 );
 
-    cout << "segment number : " << segment_number << endl;
-    cout << "length : " << length << endl;
-    cout << "spacing : " << spacing << endl;
-    cout << "num_points : " << num_points << endl;
+//    cout << "segment number : " << segment_number << endl;
+//    cout << "length : " << length << endl;
+//    cout << "spacing : " << spacing << endl;
+//    cout << "num_points : " << num_points << endl;
 
     for (int i=0; i<num_points; ++i)
     {
@@ -693,7 +693,7 @@ std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::EnvironmentBa
     std::vector< OpenRAVE::RaveVector<float> > vpoints;
     OpenRAVE::RaveVector<float> vcolor(0.,0.,0.,1);
 
-    cout << "nb of joints : " << joints.size() << endl;
+//    cout << "nb of joints : " << joints.size() << endl;
 
     for( size_t i=0; i<joints.size()-1; i++ )
     {
@@ -741,7 +741,7 @@ std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::EnvironmentBa
         // Make sure the array of radii is big enough
         double radius( i >= radii.size() ? radii.back().second : radii[i].second );
 
-        cout << "radius[ " << i << " ] : " << radius << endl;
+//        cout << "radius[ " << i << " ] : " << radius << endl;
 
         // Get the firs or second joint (2nd in the case of the Puck Robot)
         OpenRAVE::KinBody::JointPtr joint_attached( use_second_joint ? j2 : j1 );
@@ -749,7 +749,7 @@ std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::EnvironmentBa
         // Get links and parent joints
         std::vector<int> parent_joints;
         std::vector<CollisionPoint> new_points = getLinksCollisionPoints( joint_attached, p1, p2, i, parent_joints, radius );
-        cout << "for joint : " << joint_attached->GetName() << " , " << new_points.size() << endl;
+//        cout << "for joint : " << joint_attached->GetName() << " , " << new_points.size() << endl;
         collision_points.insert( collision_points.end(), new_points.begin(), new_points.end() );
     }
 
