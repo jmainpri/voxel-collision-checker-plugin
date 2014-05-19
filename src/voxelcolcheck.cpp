@@ -378,7 +378,9 @@ void VoxelCollisionChecker::RedrawCollisionPoints()
 
     for( size_t i =0; i < collision_points_.size() ; i ++ )
     {
-        if( radii_[ collision_points_[i].getSegmentNumber() ].first )
+        int segment = collision_points_[i].getSegmentNumber();
+//        cout << "collision_points_[i].getSegmentNumber() : " << segment << " , " << radii_[ segment ].first << endl;
+        if( segment < int(radii_.size()) && radii_[ segment ].first )
         {
             collision_points_[i].draw( graphptrs_, robots[0], GetEnv() );
         }

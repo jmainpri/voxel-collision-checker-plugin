@@ -710,27 +710,29 @@ std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::EnvironmentBa
         OpenRAVE::Vector p2 = T * j2->GetAnchor();
 //        OpenRAVE::Vector p2 = T * j2->GetHierarchyChildLink()->GetTransform().trans;
 
-//        if( false )
-//        {
-//            cout << "j1.GetName() : " << j1->GetName() << endl;
-//            cout << "j2.GetName() : " << j2->GetName() << endl;
+        if( true )
+        {
+            cout << "T : " << T << endl;
 
-//            cout << "j1->GetAnchor() : " << j1->GetAnchor() << endl;
-//            cout << "j2->GetAnchor() : " << j2->GetAnchor() << endl;
+            cout << "j1.GetName() : " << j1->GetName() << endl;
+            cout << "j2.GetName() : " << j2->GetName() << endl;
 
-//            cout << "use_second_joint : " << use_second_joint << endl;
+            cout << "j1->GetAnchor() : " << j1->GetAnchor() << endl;
+            cout << "j2->GetAnchor() : " << j2->GetAnchor() << endl;
 
-//            cout << "p1 : " << p1 << endl;
-//            cout << "p2 : " << p2 << endl;
+            cout << "use_second_joint : " << use_second_joint << endl;
 
-//            cout << " j1->GetHierarchyChildLink()->GetTransform().trans : " << j1->GetHierarchyChildLink()->GetTransform().trans << endl;
-//            cout << " j2->GetHierarchyChildLink()->GetTransform().trans : " << j2->GetHierarchyChildLink()->GetTransform().trans << endl;
+            cout << "p1 : " << p1 << endl;
+            cout << "p2 : " << p2 << endl;
 
-//            vpoints.push_back( j1->GetHierarchyChildLink()->GetTransform().trans );
-//            vpoints.push_back( j2->GetHierarchyChildLink()->GetTransform().trans );
+            cout << " j1->GetHierarchyChildLink()->GetTransform().trans : " << j1->GetHierarchyChildLink()->GetTransform().trans << endl;
+            cout << " j2->GetHierarchyChildLink()->GetTransform().trans : " << j2->GetHierarchyChildLink()->GetTransform().trans << endl;
 
-//            cout << "dist : " << std::sqrt(( p1 - p2 ).lengthsqr3()) << endl;
-//        }
+            vpoints.push_back( j1->GetHierarchyChildLink()->GetTransform().trans );
+            vpoints.push_back( j2->GetHierarchyChildLink()->GetTransform().trans );
+
+            cout << "dist : " << std::sqrt(( p1 - p2 ).lengthsqr3()) << endl;
+        }
 
 //        if( i == 0 )
 //        {
