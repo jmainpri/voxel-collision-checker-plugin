@@ -7,7 +7,7 @@ The collision checker relies on a voxel grid representation of a distance field.
 
 ### Dependencies:
 
-* OpenRave : http://openrave.org/docs/latest_stable/
+* OpenRAVE : http://openrave.org/docs/latest_stable/
 
 
 #### Install:
