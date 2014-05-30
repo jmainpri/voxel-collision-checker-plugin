@@ -5,22 +5,22 @@ The collision checker implements a distance propagtion field in a voxel grid. It
 
 ![Collision points and voxel sign distance field](abbie.png)
 
-Dependencies:
+### Dependencies:
 
 * OpenRave : http://openrave.org/docs/latest_stable/
 
 
-Install:
+#### Install:
 
     mkdir build && cd build
     cmake ..
     make install
     
-Set up your enviroment:
+ Set up your enviroment:
 
     export OPENRAVE_PLUGINS=$HOME/voxel-collision-checker-plugin/plugins:$OPENRAVE_PLUGINS
     
-Run:
+#### Run:
     
     cd examples
     python pr2_simple_example.py
