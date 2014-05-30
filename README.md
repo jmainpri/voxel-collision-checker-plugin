@@ -22,6 +22,4 @@ The collision checker implements a distance propagtion field in a voxel grid. It
     
 #### Run:
     
-    cd examples
-    python pr2_simple_example.py
-
+    cd examples && python pr2_simple_example.py
