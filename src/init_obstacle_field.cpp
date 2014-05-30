@@ -710,7 +710,7 @@ std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::EnvironmentBa
         OpenRAVE::Vector p2 = T * j2->GetAnchor();
 //        OpenRAVE::Vector p2 = T * j2->GetHierarchyChildLink()->GetTransform().trans;
 
-        if( true )
+        if( false )
         {
             cout << "T : " << T << endl;
 
