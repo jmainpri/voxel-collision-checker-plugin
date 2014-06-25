@@ -518,15 +518,19 @@ bool VoxelCollisionChecker::Initialize( std::istream& sinput )
         colbodies_.clear();
         GetEnv()->GetBodies( colbodies_ );
 
-//        int robot_id = 0;
-//        for( size_t i=0; i<colbodies_.size(); i++ )
-//        {
-//            if( colbodies_[i]->GetName() == robots[0]->GetName() )
-//                robot_id = i;
-//        }
+        bool no_robot = true;
+        if( no_robot )
+        {
+            int robot_id = 0;
+            for( size_t i=0; i<colbodies_.size(); i++ )
+            {
+                if( colbodies_[i]->GetName() == robots[0]->GetName() )
+                    robot_id = i;
+            }
 
-        // Remove robot from collision body list
-        // colbodies_.erase( colbodies_.begin() + robot_id );
+            // Remove robot from collision body list
+            colbodies_.erase( colbodies_.begin() + robot_id );
+        }
 
         // Get robot transform and apply offset
 

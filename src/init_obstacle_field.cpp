@@ -704,6 +704,48 @@ std::vector<CollisionPoint> createCollionPointsForRobot( OpenRAVE::EnvironmentBa
         OpenRAVE::KinBody::JointPtr j1 = joints[i];
         OpenRAVE::KinBody::JointPtr j2 = joints[i+1];
 
+        std::vector< OpenRAVE::KinBody::JointPtr > chain;
+        if (!robot->GetChain( j1->GetJointIndex(), j2->GetJointIndex() , chain ) ) {
+            //continue;
+            cout << "No chain"  << endl;
+        }
+
+        if( robot->GetName() == "pr2" )
+        {
+            if( j1->GetName().substr (0,2) != j2->GetName().substr (0,2) ) {
+                continue;
+            }
+//                int nb_of_joints = 0;
+//                for( size_t j=0; j<chain.size(); j++ )
+//                {
+//                    if ( chain[j]->GetName().find("gazebo") == std::string::npos ){
+//                        nb_of_joints++;
+//                    }
+//                    cout << "Get joint name : " << chain[j]->GetName() << endl;
+//                }
+//                if( nb_of_joints == 0 ){
+//                    // continue;
+//                    cout << "Remove : " << j1->GetName() << endl;
+//                }
+//                cout << "Print chain : " << j1->GetName() << " , "  << j2->GetName() << endl;
+        }
+
+//        if( j1->GetHierarchyChildLink()->GetName() != j2->GetHierarchyParentLink()->GetName() ){
+//            continue;
+//        }
+
+//        std::vector< OpenRAVE::KinBody::JointPtr > ordered_joints = robot->GetDependencyOrderedJoints();
+//        std::vector< OpenRAVE::KinBody::JointPtr>::iterator it_jnt = find( ordered_joints.begin(), ordered_joints.end(), j1 );
+//        if( it_jnt == ordered_joints.end() ) {
+//            continue;
+//        }
+//        it_jnt++;
+//        if( j2->GetName() != (*it_jnt)->GetName() ) {
+//            cout << "j2 : "  << j2->GetName() << endl;
+//            cout << "it_jnt : "  << (*it_jnt)->GetName() << endl;
+//            continue;
+//        }
+
         OpenRAVE::TransformMatrix T = j1->GetHierarchyChildLink()->GetTransform().inverse();
 
         OpenRAVE::Vector p1 = T * ( use_second_joint ? j2 : j1 )->GetAnchor();

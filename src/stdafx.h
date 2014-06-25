@@ -223,7 +223,7 @@ class RaveDoubleVectorToRaveFloatVector : public RaveVector<float> {
 
 //#include "newmatap.h"
 //#include "newmatio.h"
-#include <newmat/newmat.h>
+//#include <newmat/newmat.h>
 #define SETUP_C_SUBSCRIPTS
 
 //#include "voxel_grid.hpp"
